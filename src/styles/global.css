@@ -127,6 +127,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 .product-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 21px 19px; padding: 17px 18px 0; }
 .product-card { min-width: 0; overflow: hidden; border-radius: 15px; background: #fff; }
+.product-card-clickable { cursor: pointer; outline: none; }
+.product-card-clickable:focus-visible { box-shadow: 0 0 0 3px #5b6a39; }
 .product-image-wrap { position: relative; display: grid; height: 151px; place-items: center; background: #eceae6; }
 .product-image-wrap > img { width: 70%; height: 88%; object-fit: contain; }
 .favorite-button { position: absolute; top: 10px; right: 10px; width: 20px; height: 20px; padding: 0; border: 0; background: transparent; cursor: pointer; }
@@ -165,6 +167,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 .closet-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 19px; padding: 0 20px; }
 .closet-card { height: 197px; overflow: hidden; border-radius: 15px; background: #fff; }
+.closet-selectable-card { position: relative; cursor: pointer; outline: none; }
+.closet-selectable-card.selected { box-shadow: 0 0 0 3px #5b6a39 inset; }
+.closet-selectable-card:focus-visible { box-shadow: 0 0 0 3px #5b6a39; }
 .closet-image-wrap { display: grid; height: 135px; place-items: center; }
 .closet-image-wrap img { width: 76%; height: 88%; object-fit: contain; }
 .closet-image-wrap.belt img { width: 82%; height: 55%; }
@@ -183,6 +188,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .dna-selection-icon { position: absolute; z-index: 1; top: 15px; right: 15px; width: 15px; height: 15px; }
 .dna-build-button { border: 0; cursor: pointer; font: inherit; }
 .dna-build-button:disabled { cursor: not-allowed; opacity: 0.5; }
+.closet-screen .closet-dna-button,
+.closet-screen .closet-add-item-button {
+  bottom: 107px;
+  width: calc((100% - 48px) / 2);
+  height: 73px;
+}
+.closet-screen .closet-dna-button { left: calc(50% - 8px); transform: translateX(-100%); }
+.closet-screen .closet-add-item-button { left: calc(50% + 8px); transform: none; }
 
 .scan-screen {
   position: relative;
@@ -326,6 +339,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .buy-button { color: #724c25; background: #fff; }
 .reserve-button { color: #fff; background: #5b6a39; cursor: pointer; }
 .buy-button small, .reserve-button small { font-size: 14px; font-weight: 400; line-height: 24px; }
+.closet-add-detail-button { display: flex; width: calc(100% - 36px); height: 58px; flex-direction: column; align-items: center; justify-content: center; margin: 10px auto 0; border: 1px solid #5b6a39; border-radius: 22px; color: #5b6a39; background: transparent; cursor: pointer; font: inherit; font-size: 17px; line-height: 21px; }
+.closet-add-detail-button small { font-size: 12px; line-height: 20px; }
+.closet-add-detail-button:disabled { cursor: wait; opacity: 0.6; }
+.closet-add-detail-message { width: calc(100% - 36px); margin: 8px auto 0; color: #5b6a39; font-size: 13px; line-height: 20px; text-align: center; }
 .detail-bottom-nav { position: fixed; }
 
 .checkout-screen { position: relative; width: 100%; max-width: 393px; min-height: 852px; margin: 0 auto; padding-bottom: 129px; background: #fdf9f2; }
@@ -655,3 +672,229 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
 .placeholder-card p:not(.eyebrow) { margin: 24px 0 0; color: var(--color-muted); line-height: 1.7; }
 
 .placeholder-card .button { margin-top: 32px; }
+
+.closet-add-complete-screen {
+  position: relative;
+  width: 100%;
+  max-width: 393px;
+  min-height: 100svh;
+  margin: 0 auto;
+  overflow: hidden;
+  background: #fdf9f2;
+}
+
+.closet-add-complete-content {
+  position: absolute;
+  top: 202px;
+  left: 50%;
+  width: 277px;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.closet-add-complete-image {
+  display: block;
+  width: 168px;
+  height: 172px;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+.closet-add-complete-copy { margin-top: 19px; }
+.closet-add-complete-copy h1 { margin: 0; font-size: 25px; font-weight: 500; line-height: 24px; white-space: nowrap; }
+.closet-add-complete-english { margin: 10px 0 0; font-size: 14px; line-height: 24px; }
+.closet-add-complete-item { margin: 8px 0 0; color: #9e7143; font-size: 14px; line-height: 24px; }
+.closet-add-complete-error { margin: 10px 0 0; color: #b04636; font-size: 12px; line-height: 18px; }
+
+.closet-add-complete-button {
+  position: absolute;
+  top: 546px;
+  left: 50%;
+  display: flex;
+  width: 353px;
+  height: 73px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 25px;
+  color: #fff;
+  background: #5b6a39;
+  cursor: pointer;
+  font: inherit;
+  transform: translateX(-50%);
+}
+
+.closet-add-complete-button span { font-size: 20px; font-weight: 500; line-height: 24px; }
+.closet-add-complete-button small { font-size: 14px; line-height: 24px; }
+.closet-add-complete-nav { position: fixed; }
+
+.mood-selection-screen { position: relative; width: 100%; max-width: 393px; min-height: 100svh; margin: 0 auto; padding-bottom: 100px; background: #fdf9f2; }
+.mood-selection-header { position: relative; display: flex; height: 96px; align-items: center; justify-content: center; text-align: center; }
+.mood-selection-header > div { display: flex; flex-direction: column; gap: 3px; }
+.mood-selection-header strong { font-size: 20px; font-weight: 500; line-height: 24px; }
+.mood-selection-header span { font-size: 14px; line-height: 24px; }
+.mood-back-button { position: absolute; top: 42px; left: 28px; width: 24px; height: 28px; padding: 0; border: 0; background: transparent; cursor: pointer; transform: translateY(-50%); }
+.mood-back-button img { width: 100%; height: 100%; }
+.mood-calendar { position: absolute; top: 42px; right: 30px; width: 25px; height: 25px; transform: translateY(-50%); }
+.mood-curator-message { position: relative; display: flex; width: calc(100% - 40px); height: 53px; align-items: center; margin: 24px auto 0; border-radius: 15px; background: rgba(217, 217, 217, 0.2); box-shadow: 2px 2px 4px rgba(80, 53, 75, 0.2); font-size: 14px; font-weight: 500; }
+.mood-curator-message img { width: 50px; height: 50px; margin: 0 12px 0 38px; object-fit: cover; }
+.mood-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px 20px; padding: 40px 20px 0; }
+.mood-card { display: flex; height: 185px; flex-direction: column; align-items: center; justify-content: flex-start; padding: 26px 10px 18px; border: 2px solid transparent; border-radius: 15px; background: #fff; cursor: pointer; font: inherit; }
+.mood-card.selected { border-color: #9e7143; }
+.mood-icon { display: grid; width: 67px; height: 67px; place-items: center; margin-bottom: 21px; border-radius: 50%; background: #eceae6; }
+.mood-icon img { width: 67px; height: 67px; }
+.mood-card strong { font-size: 18px; font-weight: 500; line-height: 24px; }
+.mood-card small { margin-top: 2px; font-size: 12px; line-height: 24px; }
+.mood-selection-error { min-height: 18px; margin: 8px 20px -2px; color: #b04636; font-size: 12px; text-align: center; }
+.mood-see-looks-button { position: absolute; bottom: 130px; left: 20px; display: flex; width: calc(100% - 40px); height: 73px; flex-direction: column; align-items: center; justify-content: center; border: 0; border-radius: 25px; color: #fff; background: #5b6a39; cursor: pointer; font: inherit; }
+.mood-see-looks-button:disabled { cursor: wait; opacity: 0.75; }
+.mood-see-looks-button span { font-size: 20px; font-weight: 500; line-height: 24px; }
+.mood-see-looks-button small { font-size: 14px; line-height: 24px; }
+.mood-selection-nav { position: fixed; }
+
+.outfit-recommendation-screen { width: 100%; max-width: 393px; min-height: 100svh; margin: 0 auto; padding-bottom: 30px; background: #fdf9f2; }
+.simple-page-header { display: flex; height: 96px; align-items: center; justify-content: center; position: relative; text-align: center; }
+.simple-page-header button { position: absolute; left: 24px; border: 0; background: transparent; font-size: 38px; cursor: pointer; }
+.simple-page-header div { display: flex; flex-direction: column; gap: 3px; }
+.simple-page-header strong { font-size: 20px; font-weight: 500; line-height: 24px; }
+.simple-page-header span { font-size: 14px; line-height: 24px; }
+.outfit-list { display: flex; flex-direction: column; gap: 15px; padding: 20px; }
+.outfit-card { display: flex; min-height: 180px; align-items: center; gap: 18px; padding: 15px; border-radius: 15px; background: #fff; }
+.outfit-card img { width: 145px; height: 145px; object-fit: contain; }
+.outfit-card strong { font-size: 18px; font-weight: 500; }
+.outfit-card p { color: #724c25; font-size: 13px; line-height: 22px; }
+.empty-state { text-align: center; }
+
+.outfit-recommendation-screen { position: relative; width: 100%; max-width: 393px; min-height: 1580px; margin: 0 auto; padding-bottom: 110px; overflow: hidden; background: #fdf9f2; }
+.outfit-recommendation-header { position: relative; display: flex; height: 96px; align-items: center; justify-content: center; text-align: center; }
+.outfit-recommendation-header > div { display: flex; flex-direction: column; gap: 3px; }
+.outfit-recommendation-header strong { font-size: 20px; font-weight: 500; line-height: 24px; }
+.outfit-recommendation-header span { font-size: 14px; line-height: 24px; }
+.outfit-recommendation-header button { position: absolute; top: 0; left: 0; width: 73px; height: 63px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.outfit-recommendation-header button img { display: block; width: 73px; height: 63px; }
+.outfit-recommendation-title { position: absolute; top: 111px; left: 30px; color: #724c25; }
+.outfit-recommendation-title h1 { margin: 0; font-size: 25px; font-weight: 500; line-height: 24px; letter-spacing: -0.04em; }
+.outfit-recommendation-title p { margin: 2px 0 0; font-size: 14px; line-height: 24px; }
+.outfit-recommendation-list { position: absolute; top: 191px; left: 20px; display: flex; flex-direction: column; gap: 15px; width: 353px; }
+.outfit-recommendation-card { width: 353px; height: 402px; overflow: hidden; border-radius: 15px; background: #fff; }
+.outfit-recommendation-image { width: 353px; height: 293px; overflow: hidden; border-radius: 15px 15px 0 0; background: #eceae6; }
+.outfit-recommendation-image img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.outfit-recommendation-copy { display: flex; height: 109px; flex-direction: column; align-items: center; justify-content: flex-start; gap: 3px; padding: 17px 20px 0; text-align: center; }
+.outfit-recommendation-copy strong { color: #724c25; font-size: 18px; font-weight: 500; line-height: 24px; }
+.outfit-recommendation-copy p { margin: 0; font-size: 12px; line-height: 24px; }
+.outfit-log-button { position: absolute; top: 1450px; left: 20px; display: flex; width: 353px; height: 73px; flex-direction: column; align-items: center; justify-content: center; border: 0; border-radius: 25px; color: #fff; background: #5b6a39; cursor: pointer; font: inherit; }
+.outfit-log-button span { font-size: 20px; font-weight: 500; line-height: 24px; }
+.outfit-log-button small { font-size: 14px; line-height: 24px; }
+.outfit-recommendation-nav { position: fixed; }
+
+.outfit-detail-screen { position: relative; width: 100%; max-width: 393px; min-height: 1260px; margin: 0 auto; padding-bottom: 110px; overflow: hidden; background: #fdf9f2; }
+.outfit-detail-header { position: relative; display: flex; height: 96px; align-items: center; justify-content: center; text-align: center; }
+.outfit-detail-header > div { display: flex; flex-direction: column; gap: 3px; }
+.outfit-detail-header strong { font-size: 20px; font-weight: 500; line-height: 24px; }
+.outfit-detail-header span { font-size: 14px; line-height: 24px; }
+.outfit-detail-header button { position: absolute; top: 0; left: 0; width: 73px; height: 63px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.outfit-detail-header button img { display: block; width: 73px; height: 63px; }
+.outfit-detail-look-title { position: absolute; top: 111px; left: 29px; margin: 0; color: #724c25; font-size: 25px; font-weight: 500; line-height: 24px; }
+.outfit-detail-image { position: absolute; top: 165px; left: 20px; display: block; width: 353px; height: 393px; border-radius: 15px; background: #eceae6; object-fit: cover; }
+.outfit-detail-description { position: absolute; top: 573px; left: 20px; display: grid; width: 353px; height: 155px; box-sizing: border-box; place-items: center; padding: 20px; border-radius: 15px; background: #fff; }
+.outfit-detail-description p { margin: 0; font-size: 14px; font-weight: 500; line-height: 24px; }
+.outfit-detail-matching { position: absolute; top: 742px; left: 20px; width: 353px; height: 162px; box-sizing: border-box; padding: 25px 30px 15px; border-radius: 15px; background: #fff; }
+.outfit-detail-matching h2, .outfit-detail-items h2 { margin: 0; font-size: 18px; font-weight: 500; line-height: 24px; }
+.outfit-detail-matching > span, .outfit-detail-items > span { display: block; margin: 0 0 19px 6px; font-size: 12px; line-height: 24px; }
+.matching-row { display: flex; height: 28px; align-items: center; gap: 12px; }
+.matching-row label { width: 62px; color: #9e7143; font-size: 14px; white-space: nowrap; }
+.matching-row > div { width: 218px; height: 16px; overflow: hidden; border-radius: 30px; background: #eceae6; }
+.matching-row i { display: flex; height: 16px; align-items: center; justify-content: flex-end; padding-right: 8px; box-sizing: border-box; border-radius: 30px; color: #fff; background: #724c25; font-size: 9px; font-style: normal; }
+.outfit-detail-items { position: absolute; top: 918px; left: 20px; width: 353px; height: 173px; box-sizing: border-box; padding: 16px 21px; border-radius: 15px; background: #fff; }
+.outfit-detail-items > span { margin-left: 4px; margin-bottom: 8px; }
+.used-item { display: flex; height: 40px; align-items: center; gap: 10px; }
+.used-item b { display: inline-flex; min-width: 60px; height: 28px; align-items: center; justify-content: center; border-radius: 30px; color: #fff; background: #cfb8a1; font-size: 14px; font-weight: 500; }
+.used-item p { margin: 0; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.used-item a { margin-left: auto; color: #9e7143; font-size: 9px; text-decoration: none; }
+.outfit-detail-actions { position: absolute; top: 1112px; left: 16px; display: flex; gap: 7px; }
+.outfit-detail-upload, .outfit-detail-save { height: 73px; border: 0; border-radius: 25px; cursor: pointer; font: inherit; }
+.outfit-detail-upload { display: flex; width: 215px; flex-direction: column; align-items: center; justify-content: center; color: #fff; background: #5b6a39; }
+.outfit-detail-upload span { font-size: 20px; font-weight: 500; line-height: 24px; }
+.outfit-detail-upload small { font-size: 14px; line-height: 24px; }
+.outfit-detail-save { display: flex; width: 78px; flex-direction: column; align-items: center; justify-content: center; color: #724c25; background: #eceae6; }
+.outfit-detail-save img { width: 16px; height: 24px; margin-bottom: 2px; }
+.outfit-detail-save span { font-size: 12px; line-height: 24px; }
+.outfit-detail-nav { position: fixed; }
+
+.style-log-screen { position: relative; width: 100%; max-width: 393px; min-height: 100svh; margin: 0 auto; padding-bottom: 100px; background: #fdf9f2; }
+.style-log-header { position: relative; display: flex; height: 96px; align-items: center; justify-content: center; text-align: center; }
+.style-log-header > div { display: flex; flex-direction: column; gap: 3px; }
+.style-log-header strong { font-size: 20px; font-weight: 500; line-height: 24px; }
+.style-log-header span { font-size: 14px; line-height: 24px; }
+.style-log-header button { position: absolute; top: 0; left: 0; width: 73px; height: 63px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.style-log-header button img { display: block; width: 73px; height: 63px; }
+.style-log-upload-section { position: absolute; top: 111px; left: 31px; color: #724c25; }
+.style-log-upload-section h1 { margin: 0; font-size: 25px; font-weight: 500; line-height: 24px; }
+.style-log-upload-section p { margin: 2px 0 0; font-size: 14px; line-height: 24px; }
+.style-log-photo-box { position: absolute; top: 77px; left: -11px; display: grid; width: 353px; height: 131px; place-items: center; overflow: hidden; border-radius: 15px; background: rgba(207, 184, 161, 0.5); cursor: pointer; }
+.style-log-photo-box > img { width: 50px; height: 50px; object-fit: contain; }
+.style-log-photo-box.has-photo > img { width: 100%; height: 100%; object-fit: cover; }
+.style-log-photo-box input { display: none; }
+.style-log-note-card { position: absolute; top: 332px; left: 20px; width: 353px; height: 311px; box-sizing: border-box; padding: 20px; border-radius: 15px; background: #fff; }
+.style-log-note-card h2 { margin: 0; font-size: 18px; font-weight: 500; line-height: 24px; }
+.style-log-note-card > span { display: block; font-size: 12px; line-height: 24px; }
+.style-log-note-card textarea { display: block; width: 312px; height: 206px; box-sizing: border-box; margin-top: 18px; padding: 14px; resize: none; border: 0; border-radius: 15px; outline: 0; color: #724c25; background: #eceae6; font: inherit; font-size: 14px; line-height: 24px; }
+.style-log-note-card textarea::placeholder { color: #9e7143; opacity: 1; }
+.style-log-public-card { position: absolute; top: 659px; left: 20px; display: flex; width: 353px; height: 71px; align-items: center; justify-content: space-between; box-sizing: border-box; padding: 12px 20px; border-radius: 15px; background: #fff; box-shadow: 2px 2px 4px rgba(80, 53, 75, 0.2); }
+.style-log-public-card strong { display: block; font-size: 14px; font-weight: 500; line-height: 24px; }
+.style-log-public-card p { margin: 0; color: #9e7143; font-size: 12px; line-height: 24px; }
+.style-log-public-card button { position: relative; width: 52px; height: 24px; padding: 0; border: 0; border-radius: 30px; background: #eceae6; cursor: pointer; }
+.style-log-public-card button span { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: left 160ms ease; }
+.style-log-public-card button.on { background: #cfb8a1; }
+.style-log-public-card button.on span { left: 30px; }
+.style-log-message { position: absolute; top: 732px; left: 20px; width: 353px; margin: 0; color: #9e7143; font-size: 12px; text-align: center; }
+.style-log-submit { position: absolute; top: 757px; left: 20px; display: flex; width: 353px; height: 73px; flex-direction: column; align-items: center; justify-content: center; border: 0; border-radius: 25px; color: #fff; background: #5b6a39; cursor: pointer; font: inherit; }
+.style-log-submit:disabled { cursor: wait; opacity: 0.75; }
+.style-log-submit span { font-size: 20px; font-weight: 500; line-height: 24px; }
+.style-log-submit small { font-size: 14px; line-height: 24px; }
+.style-log-nav { position: fixed; }
+
+.style-log-detail-screen { position: relative; width: 100%; max-width: 393px; min-height: 900px; margin: 0 auto; padding-bottom: 100px; overflow: hidden; background: #fdf9f2; }
+.style-log-detail-header { position: relative; display: flex; height: 96px; align-items: center; justify-content: center; text-align: center; }
+.style-log-detail-header > div { display: flex; flex-direction: column; gap: 3px; }
+.style-log-detail-header strong { font-size: 20px; font-weight: 500; line-height: 24px; }
+.style-log-detail-header span { font-size: 14px; line-height: 24px; }
+.style-log-detail-header button { position: absolute; top: 0; left: 0; width: 73px; height: 63px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.style-log-detail-header button img { display: block; width: 73px; height: 63px; }
+.style-log-detail-image { position: absolute; top: 111px; left: 20px; display: block; width: 353px; height: 441px; border-radius: 15px; object-fit: cover; }
+.style-log-detail-note { position: absolute; top: 571px; left: 20px; display: flex; width: 353px; height: 120px; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; padding: 18px 20px; border-radius: 15px; background: rgba(217, 217, 217, 0.2); color: #724c25; text-align: center; }
+.style-log-detail-note strong { color: #000; font-size: 16px; font-weight: 500; line-height: 24px; }
+.style-log-detail-note p { margin: 12px 0 0; font-size: 14px; font-weight: 500; line-height: 24px; }
+.style-log-detail-items { position: absolute; top: 710px; left: 20px; display: flex; width: 353px; height: 113px; flex-direction: column; justify-content: center; box-sizing: border-box; padding: 15px 21px; border-radius: 15px; background: #fff; }
+.style-log-used-item { display: flex; height: 40px; align-items: center; gap: 10px; }
+.style-log-used-item b { display: inline-flex; min-width: 60px; height: 28px; align-items: center; justify-content: center; border-radius: 30px; color: #fff; background: #cfb8a1; font-size: 14px; font-weight: 500; }
+.style-log-used-item p { margin: 0; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.style-log-used-item a { margin-left: auto; color: #9e7143; font-size: 9px; text-decoration: none; }
+.style-log-detail-nav { position: fixed; }
+
+.style-calendar-screen { position: relative; width: 100%; max-width: 393px; min-height: 900px; margin: 0 auto; padding-bottom: 100px; overflow: hidden; background: #fdf9f2; }
+.style-calendar-header { position: relative; display: flex; height: 96px; align-items: center; justify-content: center; text-align: center; }
+.style-calendar-header > div { display: flex; flex-direction: column; gap: 3px; }
+.style-calendar-header strong { font-size: 20px; font-weight: 500; line-height: 24px; }
+.style-calendar-header span { font-size: 14px; line-height: 24px; }
+.style-calendar-header button { position: absolute; top: 0; left: 0; width: 73px; height: 63px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.style-calendar-header button img { display: block; width: 73px; height: 63px; }
+.style-calendar-message { position: absolute; top: 120px; left: 20px; display: flex; width: 353px; height: 53px; align-items: center; border-radius: 15px; background: rgba(217, 217, 217, 0.2); box-shadow: 2px 2px 4px rgba(80, 53, 75, 0.2); font-size: 14px; font-weight: 500; }
+.style-calendar-message img { width: 50px; height: 50px; margin-left: 55px; margin-right: 12px; object-fit: cover; }
+.calendar-card { position: absolute; top: 188px; left: 20px; width: 353px; height: 429px; box-sizing: border-box; padding: 25px 10px 12px; border-radius: 15px; background: #fff; }
+.calendar-weekdays { display: grid; width: 333px; height: 30px; grid-template-columns: repeat(7, 1fr); place-items: center; border-radius: 30px; background: #eceae6; color: #724c25; font-size: 14px; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 59px; place-items: center; padding-top: 9px; color: #724c25; font-size: 14px; }
+.calendar-grid button { display: grid; width: 30px; height: 30px; place-items: center; padding: 0; border: 0; border-radius: 50%; color: #724c25; background: transparent; cursor: pointer; font: inherit; }
+.calendar-grid button:disabled { cursor: default; }
+.calendar-grid button.marked { color: #724c25; background: #d69aaa; }
+.calendar-filter { position: absolute; left: 20px; display: flex; width: 353px; height: 71px; align-items: center; justify-content: space-between; box-sizing: border-box; padding: 12px 20px; border-radius: 15px; background: #fff; box-shadow: 2px 2px 4px rgba(80, 53, 75, 0.2); }
+.calendar-recommended-filter { top: 638px; }
+.calendar-mine-filter { top: 717px; }
+.calendar-filter strong { display: block; font-size: 14px; font-weight: 500; line-height: 24px; }
+.calendar-filter p { margin: 0; color: #9e7143; font-size: 12px; line-height: 24px; }
+.calendar-filter button { position: relative; width: 52px; height: 24px; padding: 0; border: 0; border-radius: 30px; background: #eceae6; cursor: pointer; }
+.calendar-filter button span { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: left 160ms ease; }
+.calendar-filter button.on { background: #cfb8a1; }
+.calendar-filter button.on span { left: 30px; }
+.style-calendar-nav { position: fixed; }

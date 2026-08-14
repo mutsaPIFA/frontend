@@ -2,8 +2,10 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080
 
 export async function apiRequest(path, options = {}) {
   const isFormData = options.body instanceof FormData
+  const accessToken = localStorage.getItem('mcm_access_token')
   const headers = {
     ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     ...options.headers,
   }
 
