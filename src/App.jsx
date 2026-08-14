@@ -1255,6 +1255,104 @@ function ClosetAddCompletePage() {
   )
 }
 
+function ProfilePage() {
+  const navigate = useNavigate()
+  const [me, setMe] = useState({ nickname: '수아', email: '' })
+  const [looks, setLooks] = useState([])
+  const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    Promise.all([
+      apiRequest('/api/v1/me'),
+      apiRequest('/api/v1/looks'),
+    ])
+      .then(([profile, savedLooks]) => {
+        setMe(profile)
+        if (Array.isArray(savedLooks)) setLooks(savedLooks)
+      })
+      .catch(() => {})
+  }, [])
+
+  async function handleLogout() {
+    try {
+      await apiRequest('/api/v1/auth/logout', { method: 'POST' })
+    } catch (error) {
+      // 토큰이 이미 만료된 경우에도 로컬 세션은 정리한다.
+    } finally {
+      localStorage.removeItem('mcm_access_token')
+      sessionStorage.clear()
+      navigate('/auth/request', { replace: true })
+    }
+  }
+
+  return (
+    <main className="profile-screen" data-node-id="4:2912">
+      <div className="profile-content">
+        <header className="profile-header">
+          <button className="profile-back-button" type="button" aria-label="홈으로 가기" onClick={() => navigate('/')}>
+            <img src="/assets/profile/back.svg" alt="" />
+          </button>
+          <div><strong>홈 Home</strong><span>HOME</span></div>
+          <button className="profile-action-button" type="button" aria-label="프로필 편집">
+            <img src="/assets/profile/profile.svg" alt="" />
+          </button>
+        </header>
+
+        <section className="profile-identity">
+          <div className="profile-avatar">
+            <img src="/assets/profile/profile-mascot.png" alt="프로필 이미지" />
+            <span><img src="/assets/profile/edit.svg" alt="" /></span>
+          </div>
+          <h1>{me.nickname || '수아'}</h1>
+          <p>Fashion Enthusiast</p>
+        </section>
+
+        <section className="profile-taste-card">
+          <div className="profile-card-label"><img src="/assets/profile/taste.svg" alt="" /><span>YOUR TASTE AXIS</span></div>
+          <h2>취향 중심축: 미니멀·웜뉴트럴</h2>
+          <p>따뜻한 색감과 간결한 실루엣을 선호하시네요.<br />최근 저장한 코디의 78%가 이 축에 속합니다.</p>
+          <div className="taste-meter"><span /></div>
+          <div className="taste-meter-labels"><span>MINIMAL</span><span>78% MATCH</span></div>
+        </section>
+
+        <section className="profile-stats-grid">
+          <button type="button" className="profile-stat-card" onClick={() => navigate('/archive/calendar')}>
+            <span className="profile-stat-icon"><img src="/assets/profile/looks.svg" alt="" /></span>
+            <span className="profile-stat-label">저장한 코디</span>
+            <strong>{looks.length} <small>looks</small></strong>
+          </button>
+          <button type="button" className="profile-purchase-card" onClick={() => setMessage('구매 이력은 결제 API 연결 후 제공됩니다.')}>
+            <span className="profile-stat-icon"><img src="/assets/profile/purchase.svg" alt="" /></span>
+            <span><strong>구매 이력</strong><small>PURCHASE HISTORY</small></span>
+            <img src="/assets/profile/chevron-right.svg" alt="" />
+          </button>
+        </section>
+
+        <section className="profile-settings">
+          <p>ACCOUNT SETTINGS</p>
+          <button type="button"><img src="/assets/profile/bell.svg" alt="" /><span>알림 설정</span><img src="/assets/profile/chevron-right.svg" alt="" /></button>
+          <button type="button"><img src="/assets/profile/lock.svg" alt="" /><span>개인정보 및 보안</span><img src="/assets/profile/chevron-right.svg" alt="" /></button>
+          <button type="button"><img src="/assets/profile/help.svg" alt="" /><span>고객센터</span><img src="/assets/profile/chevron-right.svg" alt="" /></button>
+        </section>
+
+        {message && <p className="profile-message" role="status">{message}</p>}
+        <section className="profile-logout">
+          <button type="button" onClick={handleLogout}>로그아웃</button>
+          <span>VERSION 2.4.1</span>
+        </section>
+      </div>
+
+      <nav className="profile-bottom-nav" aria-label="주요 메뉴">
+        <Link to="/"><img src="/assets/profile/home.svg" alt="" /><span>Home</span></Link>
+        <Link to="/closet"><img src="/assets/profile/closet.svg" alt="" /><span>Closet</span></Link>
+        <Link to="/closet/scan"><img className="profile-scan-icon" src="/assets/profile/scan-bg.svg" alt="" /><span>Scan</span></Link>
+        <Link to="/styling"><img src="/assets/profile/style.svg" alt="" /><span>Style</span></Link>
+        <Link className="active" to="/profile"><img src="/assets/profile/profile-active.svg" alt="" /><span>Profile</span></Link>
+      </nav>
+    </main>
+  )
+}
+
 function LoginPage() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
@@ -1469,7 +1567,7 @@ function App() {
       <Route path="/archive" element={<ProtectedRoute><StyleLogPage /></ProtectedRoute>} />
       <Route path="/archive/detail" element={<ProtectedRoute><StyleLogDetailPage /></ProtectedRoute>} />
       <Route path="/archive/calendar" element={<ProtectedRoute><StyleCalendarPage /></ProtectedRoute>} />
-      <Route path="/profile" element={<ProtectedRoute><PlaceholderPage title="프로필" /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="*" element={<PlaceholderPage title="페이지를 찾을 수 없습니다" />} />
     </Routes>
   )
