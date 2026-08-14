@@ -1,0 +1,9 @@
+{
+  "appId": "com.mcm.muse",
+  "appName": "MCM MUSE",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "http",
+    "cleartext": true
+  }
+}

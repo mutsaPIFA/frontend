@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MCM MUSE</string>
+    <string name="title_activity_main">MCM MUSE</string>
+    <string name="package_name">com.mcm.muse</string>
+    <string name="custom_url_scheme">com.mcm.muse</string>
+</resources>
