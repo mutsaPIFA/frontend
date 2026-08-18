@@ -7,8 +7,9 @@ import FadeImg from './FadeImg.jsx'
 
 // 내 옷 정보 — 옷장 카드·코디 사용 아이템 탭 시 공용.
 // editable이면 명칭·태그 수정 가능 (계약 §3-6 PATCH /closet-items/{id})
-export default function ItemInfoModal({ item, editable = false, onClose, onSaved }) {
+export default function ItemInfoModal({ item, editable = false, onClose, onSaved, onDeleted }) {
   const [isEditing, setIsEditing] = useState(false)
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
   const [form, setForm] = useState(null)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
@@ -17,7 +18,8 @@ export default function ItemInfoModal({ item, editable = false, onClose, onSaved
 
   function startEdit() {
     setForm({
-      name: item.name || '',
+      // 미설정이어도 현재 표시명이 채워진 채로 시작 — 그걸 고치면 된다
+      name: itemDisplayName(item),
       category: item.category || '',
       color: item.color || '',
       material: item.material || '',
@@ -29,9 +31,29 @@ export default function ItemInfoModal({ item, editable = false, onClose, onSaved
 
   function close() {
     setIsEditing(false)
+    setIsConfirmingDelete(false)
     setForm(null)
     setError('')
     onClose()
+  }
+
+  // 계약 §3-5 — 옷장에서 삭제 (룩 기록은 보존되는 소프트 삭제)
+  async function deleteItem() {
+    setIsSaving(true)
+    setError('')
+    try {
+      await apiRequest(`/api/v1/closet-items/${item.id}`, { method: 'DELETE' })
+      invalidateApiCache('closet:')
+      invalidateApiCache('dna:')
+      invalidateApiCache('recommendations:')
+      onDeleted?.(item.id)
+      close()
+    } catch (deleteError) {
+      setError(deleteError.message)
+      setIsConfirmingDelete(false)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   async function save() {
@@ -89,10 +111,23 @@ export default function ItemInfoModal({ item, editable = false, onClose, onSaved
                 ))}
               </div>
             )}
-            <div className="item-modal-actions">
-              {editable && <button className="item-modal-edit" type="button" onClick={startEdit}>수정</button>}
-              <button className="item-modal-close" type="button" onClick={close}>닫기</button>
-            </div>
+            {error && <p className="item-modal-error" role="alert">{error}</p>}
+            {!isConfirmingDelete ? (
+              <>
+                <div className="item-modal-actions">
+                  {editable && <button className="item-modal-edit" type="button" onClick={startEdit}>수정</button>}
+                  <button className="item-modal-close" type="button" onClick={close}>닫기</button>
+                </div>
+                {editable && (
+                  <button className="item-modal-delete" type="button" onClick={() => setIsConfirmingDelete(true)}>옷장에서 삭제</button>
+                )}
+              </>
+            ) : (
+              <div className="item-modal-actions">
+                <button className="item-modal-edit" type="button" onClick={() => setIsConfirmingDelete(false)} disabled={isSaving}>아니요</button>
+                <button className="item-modal-close item-modal-delete-confirm" type="button" onClick={deleteItem} disabled={isSaving}>{isSaving ? '삭제 중...' : '삭제할게요'}</button>
+              </div>
+            )}
           </>
         )}
 
@@ -103,7 +138,6 @@ export default function ItemInfoModal({ item, editable = false, onClose, onSaved
               <input
                 value={form.name}
                 maxLength={30}
-                placeholder="예: 출근용 셔츠 (비우면 태그로 표시)"
                 onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
               />
             </label>

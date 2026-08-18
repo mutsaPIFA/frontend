@@ -160,6 +160,9 @@ export function ClosetPage() {
           setViewItem(updated)
           setData((current) => (current || []).map((it) => (it.id === updated.id ? updated : it)))
         }}
+        onDeleted={(deletedId) => {
+          setData((current) => (current || []).filter((it) => it.id !== deletedId))
+        }}
       />
 
       {isDeleteModalOpen && (
