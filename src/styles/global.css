@@ -40,6 +40,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   margin: 0 auto;
   border-radius: 20px;
   object-fit: cover;
+  animation: none;
 }
 
 .splash-copy {
@@ -149,8 +150,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
   max-width: 393px;
   min-height: 100svh;
   margin: 0 auto;
-  padding-bottom: 178px;
-  overflow: hidden;
+  padding-bottom: 100px;
+  overflow-x: hidden;
+  overflow-y: visible;
   background: #fdf9f2;
 }
 
@@ -160,6 +162,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .closet-heading span { font-size: 14px; line-height: 24px; }
 .closet-filter-button { position: absolute; top: 122px; right: 27px; display: flex; align-items: center; gap: 3px; padding: 0; border: 0; color: #7c7c7c; background: transparent; cursor: pointer; font: inherit; font-size: 14px; }
 .closet-filter-button img { width: 24px; height: 19px; }
+.closet-delete-button { position: absolute; z-index: 2; top: 111px; right: 20px; display: grid; width: 42px; height: 42px; place-items: center; padding: 0; border: 0; border-radius: 50%; background: #eceae6; cursor: pointer; }
+.closet-delete-button img { width: 42px; height: 42px; }
+.closet-delete-button:disabled { cursor: not-allowed; opacity: 0.7; }
 
 .closet-tabs { display: flex; width: 125px; height: 42px; align-items: center; gap: 0; margin: 17px 0 16px 22px; padding: 4px 5px; border-radius: 30px; background: #eceae6; }
 .closet-tabs button { height: 33px; flex: 1; padding: 0; border: 0; border-radius: 30px; color: #000; background: transparent; cursor: pointer; font: inherit; font-size: 14px; }
@@ -188,14 +193,17 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .dna-selection-icon { position: absolute; z-index: 1; top: 15px; right: 15px; width: 15px; height: 15px; }
 .dna-build-button { border: 0; cursor: pointer; font: inherit; }
 .dna-build-button:disabled { cursor: not-allowed; opacity: 0.5; }
-.closet-screen .closet-dna-button,
-.closet-screen .closet-add-item-button {
-  bottom: 107px;
-  width: calc((100% - 48px) / 2);
-  height: 73px;
-}
-.closet-screen .closet-dna-button { left: calc(50% - 8px); transform: translateX(-100%); }
-.closet-screen .closet-add-item-button { left: calc(50% + 8px); transform: none; }
+.closet-actions { display: flex; flex-direction: column; gap: 7px; margin-top: 20px; padding: 0 20px; }
+.closet-actions .add-item-button { position: static; z-index: auto; width: 100%; transform: none; }
+.closet-add-item-button { color: #724c25; background: #fff; }
+.closet-dna-button { border: 0; cursor: pointer; font: inherit; }
+
+.closet-delete-modal-layer { position: fixed; z-index: 20; inset: 0; background: rgba(39, 35, 31, 0.08); }
+.closet-delete-modal { position: absolute; top: 276px; left: 50%; display: flex; width: 270px; height: 180px; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 28px; border-radius: 15px; background: #fdf9f2; transform: translateX(-50%); }
+.closet-delete-modal h2 { margin: 0; font-size: 20px; font-weight: 500; line-height: 24px; text-align: center; }
+.closet-delete-error { position: absolute; top: 72px; width: 230px; margin: 0; color: #b04636; font-size: 11px; line-height: 15px; text-align: center; }
+.closet-delete-actions { display: flex; gap: 14px; margin-top: 25px; }
+.closet-delete-actions button { width: 90px; height: 48px; padding: 0; border: 0; border-radius: 30px; color: #fff; background: #cfb8a1; cursor: pointer; font: inherit; font-size: 20px; }
 
 .scan-screen {
   position: relative;
@@ -283,12 +291,41 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .dna-summary-card > strong { display: block; font-size: 14px; font-weight: 500; line-height: 23px; }
 .dna-colors { display: block; width: 130px; height: 34px; margin: 15px auto 13px; }
 .dna-summary-card p { margin: 0; white-space: pre-line; font-size: 12px; line-height: 22.75px; text-align: left; }
+.style-dna-loading { display: flex; min-height: 520px; flex-direction: column; align-items: center; justify-content: center; gap: 7px; padding: 0 20px; text-align: center; }
+.style-dna-loading img { width: 166px; height: 166px; object-fit: contain; animation: style-dna-loading-float 2.2s ease-in-out infinite; }
+.style-dna-loading strong { margin-top: 12px; font-size: 20px; font-weight: 500; line-height: 28px; }
+.style-dna-loading span { color: #9e7143; font-size: 14px; line-height: 24px; }
+.style-dna-error { display: flex; min-height: 520px; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+.style-dna-error h1 { margin: 0; color: #724c25; font-size: 20px; font-weight: 500; }
+.style-dna-error p { margin: 12px 0 20px; color: #9e7143; font-size: 13px; }
+.style-dna-error button { width: 180px; height: 52px; border: 0; border-radius: 25px; color: #fff; background: #5b6a39; cursor: pointer; font: inherit; }
+@keyframes style-dna-loading-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .style-dna-loading img { animation: none; } }
 .recommendation-section { padding-top: 14px; }
-.recommendation-card { position: relative; height: 336px; padding-top: 20px; border-radius: 15px; background: #fff; text-align: center; }
+.recommendation-heading-row { display: flex; align-items: baseline; justify-content: space-between; margin-right: 10px; }
+.recommendation-heading-row h2 { margin-bottom: 12px; }
+.recommendation-count { color: #9e7143; font-size: 11px; letter-spacing: .4px; }
+.recommendation-carousel-wrap { position: relative; margin: 0 -20px; }
+.recommendation-carousel { display: flex; gap: 12px; padding: 0 20px 8px; overflow-x: hidden; scroll-behavior: smooth; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.recommendation-carousel::-webkit-scrollbar { display: none; }
+.recommendation-card { position: relative; width: calc(100vw - 40px); max-width: 353px; height: 458px; flex: 0 0 calc(100vw - 40px); padding-top: 20px; scroll-snap-align: start; border-radius: 15px; background: #fff; text-align: center; }
 .perfect-match { display: inline-flex; height: 30px; align-items: center; padding: 0 17px; border-radius: 30px; color: #fff; background: #cfb8a1; font-size: 12px; }
 .recommendation-image { display: block; width: 144px; height: 141px; margin: 10px auto 3px; object-fit: contain; }
 .recommendation-card > p { margin: 0; font-size: 14px; line-height: 24px; }
-.more-recommendations { display: flex; width: 215px; height: 56px; align-items: center; justify-content: center; margin: 20px auto 0; border-radius: 25px; color: #fff; background: #5b6a39; font-size: 20px; font-weight: 500; }
+.recommendation-reason { display: flex; min-height: 138px; align-items: center; gap: 10px; margin: 14px 20px 0; padding: 15px 10px 12px 16px; border: 1px solid rgba(207, 184, 161, 0.55); border-radius: 16px; background: #fbf7f1; text-align: left; }
+.recommendation-reason-copy { min-width: 0; flex: 1; align-self: stretch; padding-top: 2px; }
+.recommendation-reason strong { display: block; color: #724c25; font-size: 14px; font-weight: 600; line-height: 22px; }
+.recommendation-reason span { display: block; margin-top: 6px; color: #403a35; font-size: 13px; line-height: 21px; overflow-wrap: anywhere; }
+.recommendation-mascot { display: flex; width: 112px; flex: 0 0 112px; flex-direction: column; align-items: center; align-self: stretch; justify-content: flex-end; }
+.recommendation-mascot img { display: block; width: 82px; height: 98px; object-fit: contain; animation: recommendation-reason-puppy-float 2.8s ease-in-out infinite; }
+.recommendation-mascot span { display: inline-flex; align-items: center; justify-content: center; width: 112px; min-height: 24px; padding: 3px 6px; border-radius: 20px; color: #724c25; background: #ead9c8; font-size: 9px; line-height: 14px; text-align: center; white-space: nowrap; }
+.recommendation-arrow { position: absolute; z-index: 2; top: 50%; display: grid; width: 36px; height: 36px; place-items: center; padding: 0 0 4px; border: 0; border-radius: 50%; color: #724c25; background: rgba(255, 255, 255, 0.94); box-shadow: 0 2px 8px rgba(80, 53, 75, 0.18); cursor: pointer; font-family: Georgia, serif; font-size: 34px; line-height: 1; transform: translateY(-50%); }
+.recommendation-arrow-prev { left: 5px; }
+.recommendation-arrow-next { right: 5px; }
+@keyframes recommendation-reason-puppy-float { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-5px) rotate(2deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .recommendation-mascot img { animation: none; }
+}
 .style-dna-bottom-nav { position: fixed; }
 
 .recommendations-screen { position: relative; width: 100%; max-width: 393px; min-height: 100svh; margin: 0 auto; padding-bottom: 100px; background: #fdf9f2; }
@@ -395,6 +432,23 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .profile-bottom-nav a img { width: 20px; height: 20px; object-fit: contain; }
 .profile-bottom-nav a .profile-scan-icon { width: 34px; height: 42px; margin-top: -13px; }
 .profile-bottom-nav a.active { color: #7f562b; font-weight: 700; }
+.server-settings-screen { min-height: 100svh; max-width: 390px; margin: 0 auto; padding: 72px 16px 30px; background: #fdf9f2; color: #1c1c18; }
+.server-settings-header { position: fixed; z-index: 5; top: 0; left: 50%; display: flex; width: min(100%, 390px); height: 58px; align-items: center; justify-content: space-between; padding: 6px 14px; background: #fdf9f2; transform: translateX(-50%); }
+.server-settings-header button { width: 40px; border: 0; background: transparent; color: #7f562b; font-size: 32px; line-height: 1; cursor: pointer; }
+.server-settings-header div { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.server-settings-header strong { color: #7f562b; font-family: Georgia, serif; font-size: 16px; font-weight: 400; }
+.server-settings-header span { color: #827569; font-size: 9px; letter-spacing: .6px; }
+.server-settings-card { display: flex; flex-direction: column; gap: 16px; padding: 22px 18px; border-radius: 22px; background: #fff; box-shadow: 0 4px 20px rgba(46,38,32,.05); }
+.server-settings-intro, .server-settings-help { margin: 0; color: #50453b; font-size: 12px; line-height: 19px; }
+.server-settings-card label { display: flex; flex-direction: column; gap: 7px; color: #827569; font-size: 11px; }
+.server-settings-card input { width: 100%; box-sizing: border-box; padding: 13px 12px; border: 1px solid #e8ded3; border-radius: 11px; outline: none; color: #1c1c18; font: inherit; font-size: 13px; }
+.server-settings-card input:focus { border-color: #c89666; }
+.server-settings-message { margin: 0; font-size: 11px; line-height: 17px; }
+.server-settings-message.success { color: #64805e; }
+.server-settings-message.error { color: #b45e4d; }
+.server-settings-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.server-settings-actions button { padding: 13px 8px; border: 1px solid #c89666; border-radius: 11px; background: #fff; color: #7f562b; font: inherit; font-size: 13px; cursor: pointer; }
+.server-settings-actions button[type="submit"] { background: #c89666; color: #fff; }
 .detail-bottom-nav { position: fixed; }
 
 .checkout-screen { position: relative; width: 100%; max-width: 393px; min-height: 852px; margin: 0 auto; padding-bottom: 129px; background: #fdf9f2; }
