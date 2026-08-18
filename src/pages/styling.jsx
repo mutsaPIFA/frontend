@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiRequest, assetUrl } from '../api/client.js'
+import BackButton from '../components/BackButton.jsx'
 import BottomNav from '../components/BottomNav.jsx'
 import FadeImg from '../components/FadeImg.jsx'
 import ItemInfoModal from '../components/ItemInfoModal.jsx'
 import LoadingOverlay from '../components/LoadingOverlay.jsx'
+import ReasonText from '../components/ReasonText.jsx'
 import { invalidateApiCache, useApi } from '../hooks/useApi.js'
 import { scanItemName } from '../lib/format.js'
-import { moodIcon } from '../lib/vocab.js'
 import { stylingSession } from '../lib/stylingSession.js'
 
 export function MoodSelectionPage() {
@@ -21,6 +22,16 @@ export function MoodSelectionPage() {
     return Array.isArray(result) ? result : []
   }, [], { cacheKey: 'moods' })
   const moods = data || []
+
+  // 생성 대기 연출용 재료 — 옷장 누끼가 나타났다 사라지며 "조합 중"을 보여준다
+  const { data: closetData } = useApi(async () => {
+    const result = await apiRequest('/api/v1/closet-items')
+    return Array.isArray(result) ? result : []
+  }, [], { cacheKey: 'closet:all' })
+  const outfitSlides = (closetData || [])
+    .map((item) => assetUrl(item.cutoutUrl || item.imageUrl))
+    .filter(Boolean)
+    .slice(0, 10)
 
   async function handleSeeLooks() {
     if (!selectedMoodId) {
@@ -48,9 +59,7 @@ export function MoodSelectionPage() {
   return (
     <main className="mood-selection-screen" data-node-id="53:547">
       <header className="mood-selection-header">
-        <button className="mood-back-button" type="button" aria-label="뒤로 가기" onClick={() => navigate(-1)}>
-          <img src="/assets/mood/back.svg" alt="" />
-        </button>
+        <BackButton onClick={() => navigate(-1)} />
         <div><strong>오늘은 어떤 하루예요 ?</strong><span>WHAT’S THE VIBE ?</span></div>
         <span />
       </header>
@@ -70,14 +79,16 @@ export function MoodSelectionPage() {
         {moods.map((mood) => (
           <button
             key={mood.id}
-            className={`mood-card ${selectedMoodId === mood.id ? 'selected' : ''}`}
+            className={`mood-card mood-card-photo ${selectedMoodId === mood.id ? 'selected' : ''}`}
             type="button"
             aria-pressed={selectedMoodId === mood.id}
             onClick={() => setSelectedMoodId((current) => current === mood.id ? null : mood.id)}
           >
-            <span className={`mood-icon mood-icon-${mood.iconKey}`}><img src={moodIcon(mood.iconKey)} alt="" /></span>
-            <strong>{mood.label}</strong>
-            <small>{mood.labelEn}</small>
+            <FadeImg className="mood-photo" src={`/assets/mood/mood-photo-${mood.iconKey}.jpg`} alt="" />
+            <span className="mood-card-label">
+              <strong>{mood.label}</strong>
+              <small>{mood.labelEn}</small>
+            </span>
           </button>
         ))}
       </section>
@@ -90,11 +101,14 @@ export function MoodSelectionPage() {
       {isCreating && (
         <LoadingOverlay
           image="/assets/loading-puppy-outfit.png"
+          expectedSeconds={35}
+          slides={outfitSlides}
           messages={[
-            { title: '코디를 생성하고 있어요', subtitle: '옷장과 MCM을 조합하는 중 (20~40초)' },
-            { title: '어울리는 조합을 고르고 있어요', subtitle: '무드에 맞춰 밸런스를 잡는 중이에요' },
+            { title: '옷장을 열어보고 있어요', subtitle: '오늘 입을 옷들을 꺼내는 중이에요' },
+            { title: '어울리는 조합을 고르고 있어요', subtitle: '무드에 맞춰 밸런스를 잡는 중' },
+            { title: 'MCM 포인트를 얹고 있어요', subtitle: '포인트 아이템 하나가 룩을 완성해요' },
             { title: '화보를 촬영하고 있어요', subtitle: '조명까지 세팅해서 예쁘게 담는 중' },
-            { title: '거의 다 됐어요', subtitle: '마지막 손질을 하고 있어요' },
+            { title: '컨셉 이름을 짓고 있어요', subtitle: '이 룩에 어울리는 이름으로요' },
           ]}
         />
       )}
@@ -130,7 +144,7 @@ export function OutfitRecommendationPage() {
   return (
     <main className="outfit-recommendation-screen" data-node-id="53:606">
       <header className="outfit-recommendation-header">
-        <button type="button" aria-label="뒤로 가기" onClick={() => navigate('/styling')}><img src="/assets/outfit-recommendation/mark.svg" alt="" /></button>
+        <BackButton onClick={() => navigate('/styling')} />
         <div><strong>AI 스타일리스트</strong><span>AI STYLIST</span></div>
       </header>
 
@@ -180,7 +194,7 @@ export function OutfitDetailPage() {
   return (
     <main className="outfit-detail-screen" data-node-id="268:168">
       <header className="outfit-detail-header">
-        <button type="button" aria-label="뒤로 가기" onClick={() => navigate('/styling/recommendation')}><img src="/assets/outfit-detail/mark.svg" alt="" /></button>
+        <BackButton onClick={() => navigate('/styling/recommendation')} />
         <div><strong>추천 코디</strong><span>LOOKS</span></div>
       </header>
 
@@ -189,7 +203,7 @@ export function OutfitDetailPage() {
 
       {reason && (
         <section className="outfit-detail-description">
-          <p>{reason}</p>
+          <ReasonText text={reason} extraKeywords={[outfit.mcmProduct?.name]} />
         </section>
       )}
 

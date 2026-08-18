@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiRequest, assetUrl } from '../api/client.js'
+import BackButton from '../components/BackButton.jsx'
 import BottomNav from '../components/BottomNav.jsx'
 import FadeImg from '../components/FadeImg.jsx'
 import ItemInfoModal from '../components/ItemInfoModal.jsx'
@@ -70,7 +71,7 @@ export function ClosetPage() {
   return (
     <main className="closet-screen" data-node-id="53:280">
       <header className="closet-header">
-        <button className="back-button" type="button" aria-label="뒤로 가기" onClick={() => window.history.back()} />
+        <BackButton onClick={() => window.history.back()} />
         <div className="closet-heading"><strong>내 옷장</strong><span>MY CLOSET</span></div>
         {isSelecting && (
           <button
@@ -217,7 +218,7 @@ export function ScanPage() {
   return (
     <main className="scan-screen" data-node-id="190:120">
       <header className="scan-header">
-        <button className="back-button" type="button" aria-label="뒤로 가기" onClick={() => navigate('/closet')} />
+        <BackButton onClick={() => navigate('/closet')} />
         <div className="scan-heading"><strong>아이템 추가하기</strong><span>ADD ITEM</span></div>
       </header>
 
@@ -249,11 +250,13 @@ export function ScanPage() {
       {isUploading && (
         <LoadingOverlay
           image="/assets/loading-puppy.png"
+          expectedSeconds={20}
+          slides={previewUrl ? [previewUrl] : []}
           messages={[
-            { title: '아이템을 살펴보고 있어요', subtitle: '사진 속 옷을 찾는 중 (10~40초)' },
-            { title: '배경을 지우고 있어요', subtitle: '옷만 깔끔하게 오려내는 중이에요' },
-            { title: '종류·색·소재를 알아내는 중', subtitle: '태그는 나중에 직접 고칠 수도 있어요' },
-            { title: '거의 다 됐어요', subtitle: '옷장에 넣을 준비를 하고 있어요' },
+            { title: '아이템을 살펴보고 있어요', subtitle: '사진 속 옷을 찾는 중이에요' },
+            { title: '배경을 지우고 있어요', subtitle: '옷만 깔끔하게 오려내는 중' },
+            { title: '종류와 색을 알아보고 있어요', subtitle: '어떤 아이템인지 읽는 중이에요' },
+            { title: '소재와 무드까지 읽는 중', subtitle: '태그는 나중에 직접 고칠 수 있어요' },
           ]}
         />
       )}
@@ -286,9 +289,8 @@ export function RecognizeResultPage() {
   return (
     <main className="recognize-screen" data-node-id="210:852">
       <header className="recognize-header">
-        <button className="back-button" type="button" aria-label="뒤로 가기" onClick={() => navigate('/closet/scan')} />
+        <BackButton onClick={() => navigate('/closet/scan')} />
         <div><strong>아이템 인식</strong><span>RECOGNIZE ITEM</span></div>
-        <img src="/assets/recognize/header-mark.svg" alt="" />
       </header>
 
       <div className="recognize-status"><img src="/assets/recognize/check.svg" alt="" /><span>아이템 인식 완료</span></div>
@@ -298,6 +300,7 @@ export function RecognizeResultPage() {
         <div className="recognize-item-name">{itemName}</div>
       </section>
 
+      <p className="recognize-tags-hint">태그가 다르면 탭해서 바꿀 수 있어요</p>
       <section className="recognize-tags" aria-label="인식된 태그 확인·수정">
         {[['category', '종류'], ['color', '색상'], ['material', '소재'], ['mood', '무드']].map(([key, label]) => (
           <label key={key}>
@@ -378,6 +381,18 @@ export function StyleDnaPage() {
   const navigate = useNavigate()
   const recommendationCarouselRef = useRef(null)
 
+  // 분석 대기 연출용 재료 — 선택한(없으면 전체) 옷 누끼
+  const { data: closetForSlides } = useApi(async () => {
+    const result = await apiRequest('/api/v1/closet-items')
+    return Array.isArray(result) ? result : []
+  }, [], { cacheKey: 'closet:all' })
+  const slideIds = stylingSession.dnaItemIds()
+  const dnaSlides = (closetForSlides || [])
+    .filter((item) => slideIds.length === 0 || slideIds.includes(item.id))
+    .map((item) => assetUrl(item.cutoutUrl || item.imageUrl))
+    .filter(Boolean)
+    .slice(0, 10)
+
   const dnaIds = stylingSession.dnaItemIds()
   const { data, isLoading, error, reload } = useApi(async () => {
     // 옷장에서 고르고 왔으면 그 아이템, 직접 진입이면 옷장 전체로 분석
@@ -410,18 +425,20 @@ export function StyleDnaPage() {
   return (
     <main className="style-dna-screen" data-node-id="53:125">
       <header className="style-dna-header">
-        <button className="back-button" type="button" aria-label="뒤로 가기" onClick={() => window.history.back()} />
+        <BackButton onClick={() => window.history.back()} />
         <div><strong>당신의 스타일 DNA</strong><span>YOUR STYLE DNA</span></div>
       </header>
 
       {isLoading && (
         <LoadingOverlay
           image="/assets/loading-puppy-styling.png"
+          expectedSeconds={14}
+          slides={dnaSlides}
           messages={[
             { title: '옷장을 살펴보고 있어요', subtitle: '어떤 취향인지 알아보는 중이에요' },
             { title: '컬러와 무드를 분석하고 있어요', subtitle: '자주 입는 색을 모아보는 중' },
             { title: '스타일 키워드를 뽑고 있어요', subtitle: '당신만의 DNA로 정리하는 중이에요' },
-            { title: '어울리는 MCM도 고르고 있어요', subtitle: '거의 다 됐어요!' },
+            { title: '어울리는 MCM도 고르고 있어요', subtitle: '채우면 좋은 아이템을 찾는 중' },
           ]}
         />
       )}
@@ -439,11 +456,16 @@ export function StyleDnaPage() {
           <section className="style-dna-section">
             <h1>당신의 스타일 DNA</h1>
             <div className="dna-summary-card">
-              <strong>[{dna?.keywords?.join(' · ') || '-'}]</strong>
+              {/* 키워드 칩이 톡톡, 컬러 스와치가 차례로 채워진다 */}
+              <div className="dna-keywords">
+                {(dna?.keywords || []).map((keyword, i) => (
+                  <em key={keyword} style={{ animationDelay: `${i * 0.12}s` }}>{keyword}</em>
+                ))}
+              </div>
               {(dna?.dominantColors || []).length > 0 && (
                 <div className="dna-colors" aria-label={`주요 컬러: ${dna.dominantColors.join(', ')}`}>
-                  {dna.dominantColors.map((color) => (
-                    <i key={color} title={color} style={{ background: tagColorHex[color] || tagColorHex.기타 }} />
+                  {dna.dominantColors.map((color, i) => (
+                    <i key={color} title={color} style={{ background: tagColorHex[color] || tagColorHex.기타, animationDelay: `${0.35 + i * 0.12}s` }} />
                   ))}
                 </div>
               )}

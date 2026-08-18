@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { apiRequest, assetUrl } from '../api/client.js'
+import BackButton from '../components/BackButton.jsx'
 import BottomNav from '../components/BottomNav.jsx'
 import FadeImg from '../components/FadeImg.jsx'
 import { invalidateApiCache, useApi } from '../hooks/useApi.js'
 import { formatPrice, formatSize } from '../lib/format.js'
-import { categoryOptions } from '../lib/vocab.js'
+import { categoryOptions, tagColorHex } from '../lib/vocab.js'
 import { stylingSession } from '../lib/stylingSession.js'
 
 const homePuppyImage = '/assets/home/home-puppy.png'
@@ -76,7 +77,7 @@ export function ShopPage() {
 
       <section className="home-intro">
         <img src={homePuppyImage} alt="MCM MUSE mascot" />
-        <h1>취향을 아는 샵,<br /><span>MCM MUSE</span></h1>
+        <h1>취향을 아는 샵<br /><span>MCM MUSE</span></h1>
       </section>
 
       <section className="catalog-controls">
@@ -196,7 +197,7 @@ export function ProductDetailPage() {
   return (
     <main className="detail-screen" data-node-id="53:249">
       <header className="detail-header">
-        <button className="back-button" type="button" aria-label="뒤로 가기" onClick={() => navigate(-1)} />
+        <BackButton onClick={() => navigate(-1)} />
         <div><strong>제품 상세</strong><span>DETAILS</span></div>
       </header>
 
@@ -215,8 +216,8 @@ export function ProductDetailPage() {
             ))}
           </div>
           {carouselImages.length > 1 && (
-            <div className="detail-carousel-dots" aria-hidden="true">
-              {carouselImages.map((_, i) => <i key={i} className={i === imageIndex ? 'active' : ''} />)}
+            <div className="detail-carousel-bar" aria-hidden="true">
+              <i style={{ width: `${((imageIndex + 1) / carouselImages.length) * 100}%` }} />
             </div>
           )}
         </div>
@@ -224,7 +225,8 @@ export function ProductDetailPage() {
           <h1>{product.name}</h1>
           {product.englishName && <p className="detail-english">{product.englishName}</p>}
           <strong className="detail-price">{formatPrice(product.price)}</strong>
-          <span className="detail-color-dot" />
+          {/* 상품 실제 색을 반영 — 어휘 밖이면 뉴트럴 */}
+          {product.color && <span className="detail-color-dot" style={{ background: tagColorHex[product.color] || '#c9c2b8' }} />}
           <p className="detail-options">{product.color && <>color: {product.color}</>}{formatSize(product.size) && <><br />size: {formatSize(product.size)}</>}</p>
         </div>
       </section>
@@ -285,7 +287,7 @@ export function RecommendationsPage() {
   return (
     <main className="recommendations-screen" data-node-id="53:208">
       <header className="recommendations-header">
-        <button className="back-button" type="button" aria-label="뒤로 가기" onClick={() => window.history.back()} />
+        <BackButton onClick={() => window.history.back()} />
         <div><strong>옷장에 어울리는 <span>MCM</span></strong><span><b>MCM</b> PICKS FOR YOUR CLOSET</span></div>
       </header>
 

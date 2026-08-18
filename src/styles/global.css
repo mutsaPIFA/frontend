@@ -176,8 +176,11 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 .closet-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 19px; padding: 0 20px; }
 .closet-card { height: 197px; overflow: hidden; border-radius: 15px; background: #fff; }
-.closet-selectable-card { position: relative; cursor: pointer; outline: none; }
-.closet-selectable-card.selected { box-shadow: 0 0 0 3px #8b6b47 inset; }
+.closet-selectable-card { position: relative; cursor: pointer; outline: none; transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.closet-selectable-card.selected { transform: translateY(-4px); box-shadow: 0 0 0 3px #8b6b47 inset, 0 10px 20px rgba(122, 92, 58, 0.15); }
+/* 선택하면 옷 사진이 살짝 다가온다 (무드 카드와 같은 모션 문법) */
+.closet-image-wrap img { transition: opacity 0.35s ease, transform 0.45s ease; }
+.closet-selectable-card.selected .closet-image-wrap img { transform: scale(1.12); }
 .closet-selectable-card:focus-visible { box-shadow: 0 0 0 3px #8b6b47; }
 /* overflow hidden + max 제한 — 세로로 긴 누끼가 이름 글자를 가리지 않게 */
 .closet-image-wrap { display: grid; height: 135px; place-items: center; overflow: hidden; }
@@ -275,15 +278,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .recognize-header > img { position: absolute; top: 47px; left: 0; width: 73px; height: 63px; transform: translateY(-50%); }
 .recognize-status { display: flex; width: 154px; height: 30px; align-items: center; justify-content: center; gap: 6px; margin: 17px auto 18px; border-radius: 30px; color: #fff; background: #cfb8a1; font-size: 14px; line-height: 24px; }
 .recognize-status img { width: 15px; height: 15px; }
-.recognize-item-card { width: calc(100% - 40px); height: 475px; margin: 0 auto; padding-top: 56px; border-radius: 15px; background: #fff; text-align: center; }
-.recognize-item-image { display: block; width: 82%; height: 267px; margin: 0 auto; object-fit: contain; }
-.recognize-item-name { display: flex; width: 254px; height: 60px; align-items: center; justify-content: center; margin: 35px auto 0; border-radius: 30px; background: #eceae6; font-size: 18px; font-weight: 500; line-height: 24px; }
-.recognize-actions { display: flex; flex-direction: column; gap: 10px; width: calc(100% - 40px); margin: 20px auto 0; }
-.recognize-actions button { display: flex; height: 73px; flex-direction: column; align-items: center; justify-content: center; border: 0; border-radius: 25px; cursor: pointer; font: inherit; }
-.recognize-actions button:first-child { color: #724c25; background: #fff; }
+.recognize-item-card { width: calc(100% - 40px); box-sizing: border-box; margin: 0 auto; padding: 30px 20px 24px; border-radius: 15px; background: #fff; text-align: center; }
+.recognize-item-image { display: block; width: 78%; height: 230px; margin: 0 auto; object-fit: contain; }
+.recognize-item-name { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; margin: 20px auto 0; padding: 8px 26px; border-radius: 30px; background: #f6f1e6; color: #5d4a33; font-size: 17px; font-weight: 600; line-height: 24px; }
+.recognize-actions { display: flex; gap: 10px; width: calc(100% - 40px); margin: 18px auto 0; }
+.recognize-actions button { display: flex; flex: 1; height: 52px; align-items: center; justify-content: center; border: 0; border-radius: 16px; cursor: pointer; font: inherit; }
+.recognize-actions button:first-child { border: 1px solid #e2dccd; color: #724c25; background: #fff; }
 .recognize-actions button:last-child { color: #fff; background: #8b6b47; }
-.recognize-actions strong { font-size: 20px; font-weight: 500; line-height: 24px; }
-.recognize-actions span { font-size: 14px; line-height: 24px; }
+.recognize-actions strong { font-size: 15px; font-weight: 600; line-height: 24px; }
 .recognize-bottom-nav { position: fixed; }
 
 .style-dna-screen { position: relative; width: 100%; max-width: 393px; min-height: 100svh; margin: 0 auto; padding-bottom: 100px; background: #fdf9f2; }
@@ -840,7 +842,7 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
 .mood-card strong { font-size: 18px; font-weight: 500; line-height: 24px; }
 .mood-card small { margin-top: 2px; font-size: 12px; line-height: 24px; }
 .mood-selection-error { min-height: 18px; margin: 8px 20px -2px; color: #b04636; font-size: 12px; text-align: center; }
-.mood-see-looks-button { position: absolute; bottom: 130px; left: 20px; display: flex; width: calc(100% - 40px); height: 73px; flex-direction: column; align-items: center; justify-content: center; border: 0; border-radius: 25px; color: #fff; background: #8b6b47; cursor: pointer; font: inherit; }
+.mood-see-looks-button { display: flex; width: calc(100% - 40px); flex-direction: column; align-items: center; justify-content: center; margin: 22px 20px 0; border: 0; color: #fff; background: #8b6b47; cursor: pointer; font: inherit; }
 .mood-see-looks-button:disabled { cursor: wait; opacity: 0.75; }
 .mood-see-looks-button span { font-size: 20px; font-weight: 500; line-height: 24px; }
 .mood-see-looks-button small { font-size: 14px; line-height: 24px; }
@@ -1030,6 +1032,7 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
 .closet-empty p { margin: 0; }
 
 /* 스캔 태그 확인·수정 (계약 §3-1: 태그는 사용자 수정 가능) */
+.recognize-tags-hint { width: calc(100% - 40px); margin: 16px auto -4px; padding-left: 4px; color: #9a8d74; font-size: 12px; }
 .recognize-tags {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1050,8 +1053,6 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
   font-size: 14px;
 }
 
-/* 무드 6종 카드가 하단 고정 버튼 아래로 안 깔리게 스크롤 여유 */
-.mood-grid { padding-bottom: 240px; }
 
 .style-log-photo-empty { margin: 0; padding: 40px 20px; color: #7a715f; font-size: 13px; text-align: center; }
 
@@ -1070,7 +1071,9 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
   color: #fff;
   font-size: 30px;
   font-weight: 300;
-  line-height: 1;
+  line-height: 0;
+  padding-bottom: 4px;
+  box-sizing: border-box;
   transform: translateX(calc(min(100vw, 393px) / 2 - 76px));
   box-shadow: 0 4px 12px rgba(48, 44, 29, 0.28);
 }
@@ -1143,7 +1146,21 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
   background: #fdf9f2;
   text-align: center;
 }
-.loading-overlay-puppy { width: 168px; height: auto; margin-bottom: 14px; animation: overlay-bob 1.6s ease-in-out infinite; }
+/* 원형 게이지 — 평균 소요 기준으로 차오른다. 인형·재료 슬라이드가 게이지 안에 산다 */
+.loading-gauge { position: relative; display: grid; width: 250px; height: 250px; place-items: center; margin-bottom: 18px; }
+.loading-gauge svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.loading-gauge-track { fill: none; stroke: #ece4d2; stroke-width: 8; }
+.loading-gauge-fill { fill: none; stroke: #8b6b47; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.3s linear; }
+.loading-overlay-puppy { width: 132px; height: auto; animation: overlay-bob 1.6s ease-in-out infinite; }
+/* 재료 누끼 — 쌩 누끼가 게이지 주변 네 곳을 옮겨다니며 은은하게 나타났다 사라진다 */
+.loading-slide { position: absolute; display: grid; width: 88px; height: 88px; place-items: center; animation: slide-cycle 3.2s ease-in-out both; filter: drop-shadow(0 6px 10px rgba(80, 60, 30, 0.18)); }
+.loading-slide img { width: 100%; height: 100%; object-fit: contain; }
+.loading-slide-pos0 { right: -6px; bottom: 18px; }
+.loading-slide-pos1 { left: -10px; top: 16px; }
+.loading-slide-pos2 { right: -2px; top: 12px; }
+.loading-slide-pos3 { left: -4px; bottom: 24px; }
+@keyframes slide-cycle { 0% { opacity: 0; transform: scale(0.85) translateY(6px); } 18% { opacity: 1; transform: scale(1) translateY(0); } 82% { opacity: 1; } 100% { opacity: 0; transform: scale(0.92) translateY(-4px); } }
+.loading-overlay-percent { margin-top: 10px; color: #9a8d74; font-size: 12px; letter-spacing: 0.06em; }
 .loading-overlay strong { font-size: 20px; line-height: 28px; }
 .loading-overlay p { margin: 0; color: #7a715f; font-size: 13px; line-height: 20px; }
 .loading-overlay-dots { display: flex; gap: 7px; margin-top: 16px; }
@@ -1205,15 +1222,93 @@ button:not(:disabled):active,
 /* 무드 카드 — 회색 박제 대신 무드별 파스텔 + 살아있는 선택 반응 */
 .mood-card { transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.2s ease; }
 .mood-card.selected { transform: translateY(-4px); border-color: #9e7143; box-shadow: 0 12px 24px rgba(122, 92, 58, 0.16); }
-.mood-card.selected .mood-icon { animation: float-bob 1.7s ease-in-out infinite; }
-/* 아이콘 svg에 박힌 회색 원 배경을 파스텔 위에 녹인다 */
-.mood-icon img { mix-blend-mode: multiply; }
-.mood-icon-dinner { background: #f4cfb4; }
-.mood-icon-office { background: #cfdce9; }
-.mood-icon-trip { background: #c5d3ec; }
-.mood-icon-daily { background: #eeddb4; }
-.mood-icon-walk { background: #cde4bd; }
-.mood-icon-party { background: #e2c8f0; }
+/* 무드 카드 = 실사진 무드보드 (Unsplash 큐레이션, 팀 확정) — 사진이 배경, 라벨이 앞 */
+.mood-card-photo { position: relative; overflow: hidden; padding: 0; }
+.mood-card-photo .mood-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.45s ease; }
+.mood-card-photo.selected .mood-photo { transform: scale(1.07); }
+.mood-card-label { position: absolute; right: 0; bottom: 0; left: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 36px 12px 13px; background: linear-gradient(to top, rgba(28, 22, 12, 0.72), transparent); color: #fff; }
+.mood-card-label strong { font-size: 17px; font-weight: 600; line-height: 22px; }
+.mood-card-label small { font-size: 10px; letter-spacing: 0.04em; opacity: 0.85; }
+.mood-card-photo.selected::after { content: '✓'; position: absolute; top: 10px; right: 10px; display: grid; width: 26px; height: 26px; place-items: center; border-radius: 50%; background: #8b6b47; color: #fff; font-size: 14px; }
+
+/* 화면 전환 — 뚝 바뀌지 않게 아주 짧은 페이드 */
+@keyframes screen-fade { from { opacity: 0; } to { opacity: 1; } }
+main { animation: screen-fade 0.2s ease-out; }
+
+/* 스캔 인식 완료 — 스탬프 찍히듯 등장 */
+@keyframes stamp-pop { 0% { opacity: 0; transform: scale(0.6); } 60% { transform: scale(1.08); } 100% { opacity: 1; transform: scale(1); } }
+.recognize-status { animation: stamp-pop 0.45s ease-out both; }
+
+/* 기록 저장 셀레브레이션 — 저장의 순간을 잠깐 축하하고 상세로 */
+.save-celebration {
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #fdf9f2;
+  animation: screen-fade 0.2s ease-out;
+}
+.save-celebration img { width: 150px; height: auto; animation: overlay-bob 1.4s ease-in-out infinite; }
+.save-celebration-check { display: grid; width: 46px; height: 46px; place-items: center; border-radius: 50%; background: #8b6b47; color: #fff; font-size: 22px; animation: stamp-pop 0.5s ease-out both; }
+.save-celebration strong { font-size: 20px; animation: rise-in 0.4s ease-out 0.15s both; }
+
+/* 후보 리빌 — 생성 직후 첫 화보가 살짝 커졌다 정착 */
+@keyframes reveal-pop { 0% { opacity: 0; transform: scale(1.05) translateY(10px); } 100% { opacity: 1; transform: none; } }
+.outfit-recommendation-list > article:first-child { animation: reveal-pop 0.6s ease-out both; }
+
+/* DNA 결과 — 키워드 칩 톡톡 + 스와치 순차 등장 */
+@keyframes chip-pop { 0% { opacity: 0; transform: scale(0.7); } 70% { opacity: 1; transform: scale(1.06); } 100% { opacity: 1; transform: scale(1); } }
+.dna-keywords { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.dna-keywords em { padding: 6px 14px; border-radius: 16px; background: #f3e7d4; color: #7a4a1e; font-size: 14px; font-style: normal; font-weight: 600; animation: chip-pop 0.4s ease-out both; }
+.dna-colors i { animation: chip-pop 0.4s ease-out both; }
+
+/* 상세 캐러셀 — 도트 대신 가는 진행 바 */
+.detail-carousel-bar { position: absolute; right: 24%; bottom: 12px; left: 24%; height: 3px; overflow: hidden; border-radius: 2px; background: rgba(0, 0, 0, 0.12); }
+.detail-carousel-bar i { display: block; height: 100%; border-radius: 2px; background: #8b6b47; transition: width 0.25s ease; }
+
+/* 뒤로가기 통일 — 인라인 SVG 한 세트 (화면별 제각각이던 아이콘 대체) */
+.back-chevron { position: absolute; top: 24px; left: 10px; z-index: 2; display: grid; width: 44px; height: 44px; place-items: center; padding: 0; border: 0; background: transparent; color: #2b2318; cursor: pointer; }
+.back-chevron svg { width: 22px; height: 22px; }
+
+/* 헤더 영문 서브라벨 — 은은하게 통일 */
+.home-heading span, .closet-heading span, .scan-heading span, .detail-header > div span,
+.recommendations-header > div > span, .mood-selection-header > div span, .outfit-recommendation-header span,
+.outfit-detail-header span, .style-log-header span, .style-log-detail-header span,
+.style-calendar-header span, .profile-header > div span, .recognize-header > div span {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  opacity: 0.45;
+}
+
+/* 추천 이유 시각화 — 키워드 하이라이트 + 문장 리듬 */
+.outfit-detail-description { display: block; text-align: left; }
+.outfit-detail-description p { margin: 0 0 8px; }
+.outfit-detail-description p:last-child { margin-bottom: 0; }
+.outfit-detail-description mark, .style-log-detail-note mark {
+  padding: 0 3px;
+  border-radius: 4px;
+  background: #f3e7d4;
+  color: #7a4a1e;
+  font-weight: 700;
+}
+.style-log-detail-note p { text-align: left; }
+
+/* 캘린더 — 기록 날짜에 그날 룩 화보 미니 썸네일 */
+.calendar-grid button.marked {
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  background-color: #d69aaa;
+  background-position: center;
+  background-size: cover;
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 1px 4px rgba(20, 12, 4, 0.65);
+}
 
 /* 로딩 오버레이 멘트 순환 — 바뀔 때 살짝 페이드 */
 .loading-overlay-copy { display: flex; flex-direction: column; align-items: center; gap: 6px; animation: overlay-fade 0.5s ease; }
