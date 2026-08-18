@@ -7,7 +7,7 @@ import FadeImg from '../components/FadeImg.jsx'
 import ItemInfoModal from '../components/ItemInfoModal.jsx'
 import LoadingOverlay from '../components/LoadingOverlay.jsx'
 import { invalidateApiCache, useApi } from '../hooks/useApi.js'
-import { closetItemImage, scanItemName } from '../lib/format.js'
+import { closetItemImage, itemDisplayName, scanItemName } from '../lib/format.js'
 import { tagColorHex, tagOptions } from '../lib/vocab.js'
 import { stylingSession } from '../lib/stylingSession.js'
 
@@ -127,7 +127,7 @@ export function ClosetPage() {
             </div>
             <div className="closet-info">
               <span>{item.source === 'MCM' ? 'MCM' : 'OWN'}</span>
-              <p>{scanItemName(item)}</p>
+              <p>{itemDisplayName(item)}</p>
             </div>
           </article>
         ))}
@@ -152,7 +152,18 @@ export function ClosetPage() {
         )}
       </div>
 
-      <ItemInfoModal item={viewItem} onClose={() => setViewItem(null)} />
+      <ItemInfoModal
+        item={viewItem}
+        editable
+        onClose={() => setViewItem(null)}
+        onSaved={(updated) => {
+          setViewItem(updated)
+          setData((current) => (current || []).map((it) => (it.id === updated.id ? updated : it)))
+        }}
+        onDeleted={(deletedId) => {
+          setData((current) => (current || []).filter((it) => it.id !== deletedId))
+        }}
+      />
 
       {isDeleteModalOpen && (
         <div className="closet-delete-modal-layer" role="presentation" onClick={() => setIsDeleteModalOpen(false)}>

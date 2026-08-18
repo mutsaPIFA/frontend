@@ -21,9 +21,14 @@ export function formatWornDate(value) {
   return `${String(value).replaceAll('-', '.')} (${day})`
 }
 
-// 옷장 아이템에는 name이 없다(태그만) — 표시명은 태그 조합으로 만든다
+// 표시명은 태그 조합으로 만든다 (스캔 결과·명칭 없는 아이템용)
 export function scanItemName(tags) {
   return [tags?.color, tags?.material, tags?.category].filter(Boolean).join(' ') || '내 아이템'
+}
+
+// 옷장 아이템 표시명 — 사용자 지정 명칭(계약 §3-6) 우선, 없으면 태그 조합
+export function itemDisplayName(item) {
+  return item?.name || scanItemName(item)
 }
 
 export function closetItemImage(item) {

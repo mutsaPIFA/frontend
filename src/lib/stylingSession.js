@@ -31,6 +31,14 @@ export const stylingSession = {
     delete map[index]
     write('mcm_recorded_looks', map)
   },
+  // 기록 상세에서 삭제했을 때 — look id로 기록됨 상태 해제
+  removeRecordedLookById(lookId) {
+    const map = this.recordedLooks()
+    for (const key of Object.keys(map)) {
+      if (map[key] === lookId) delete map[key]
+    }
+    write('mcm_recorded_looks', map)
+  },
 
   selectedIndex: () => Number(sessionStorage.getItem('mcm_selected_outfit_index') || 0),
   setSelectedIndex: (index) => sessionStorage.setItem('mcm_selected_outfit_index', String(index)),

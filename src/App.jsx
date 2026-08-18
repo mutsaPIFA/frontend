@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import { LoginPage, LoginRequestPage, SignupPage, SplashPage } from './pages/auth.jsx'
-import { ProductDetailPage, RecommendationsPage, ShopPage } from './pages/shop.jsx'
+import { ProductDetailPage, RecommendationsPage, ShopPage, WishlistPage } from './pages/shop.jsx'
 import { ClosetAddCompletePage, ClosetPage, RecognizeResultPage, ScanPage, StyleDnaPage } from './pages/closet.jsx'
 import { MoodSelectionPage, OutfitDetailPage, OutfitRecommendationPage } from './pages/styling.jsx'
 import { StyleCalendarPage, StyleLogDetailPage, StyleLogPage } from './pages/archive.jsx'
@@ -62,6 +62,7 @@ function App() {
       <Route path="/products/recommendations" element={<ProtectedRoute><RecommendationsPage /></ProtectedRoute>} />
       <Route path="/products/:id" element={<ProtectedRoute><ProductDetailPage /></ProtectedRoute>} />
       <Route path="/products" element={<ProtectedRoute><PlaceholderPage title="MCM 상품" /></ProtectedRoute>} />
+      <Route path="/wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
       <Route path="/styling" element={<ProtectedRoute><MoodSelectionPage /></ProtectedRoute>} />
       <Route path="/styling/recommendation" element={<ProtectedRoute><OutfitRecommendationPage /></ProtectedRoute>} />
       <Route path="/styling/recommendation/detail" element={<ProtectedRoute><OutfitDetailPage /></ProtectedRoute>} />
