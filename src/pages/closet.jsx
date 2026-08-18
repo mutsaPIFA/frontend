@@ -138,17 +138,14 @@ export function ClosetPage() {
         {!isSelecting ? (
           <button className="add-item-button dna-build-button" type="button" onClick={toggleSelecting}>
             <span>스타일 DNA 만들기</span>
-            <small>BUILD MY DNA</small>
           </button>
         ) : (
           <>
             <button className="add-item-button closet-cancel-button" type="button" onClick={toggleSelecting}>
               <span>선택 취소</span>
-              <small>CANCEL</small>
             </button>
             <button className="add-item-button dna-build-button" type="button" onClick={buildDna} disabled={selectedIds.length === 0}>
               <span>DNA 생성하기 {selectedIds.length > 0 ? `(${selectedIds.length})` : ''}</span>
-              <small>BUILD MY DNA</small>
             </button>
           </>
         )}
@@ -232,14 +229,16 @@ export function ScanPage() {
 
       {error && <p className="scan-error" role="alert">{error}</p>}
 
+      {/* 촬영(셔터) 가운데, 갤러리 오른쪽 — capture=environment라 모바일에선 카메라 앱이 바로 뜬다 */}
       <div className="scan-actions">
-        <label className="album-button" aria-label="앨범에서 추가">
-          <img src="/assets/scan/album-button.svg" alt="앨범에서 추가" />
-          <input type="file" accept="image/*" onChange={handleFileChange} />
-        </label>
+        <span className="scan-actions-spacer" aria-hidden="true" />
         <label className="camera-button" aria-label="카메라로 촬영">
           <img src="/assets/scan/camera-button.svg" alt="카메라로 촬영" />
           <input type="file" accept="image/*" capture="environment" onChange={handleFileChange} />
+        </label>
+        <label className="album-button" aria-label="앨범에서 선택">
+          <img src="/assets/scan/album-button.svg" alt="앨범에서 선택" />
+          <input type="file" accept="image/*" onChange={handleFileChange} />
         </label>
       </div>
 
@@ -250,8 +249,12 @@ export function ScanPage() {
       {isUploading && (
         <LoadingOverlay
           image="/assets/loading-puppy.png"
-          title="아이템을 살펴보고 있어요"
-          subtitle="배경을 지우고 종류·색·소재를 알아내는 중 (10~40초)"
+          messages={[
+            { title: '아이템을 살펴보고 있어요', subtitle: '사진 속 옷을 찾는 중 (10~40초)' },
+            { title: '배경을 지우고 있어요', subtitle: '옷만 깔끔하게 오려내는 중이에요' },
+            { title: '종류·색·소재를 알아내는 중', subtitle: '태그는 나중에 직접 고칠 수도 있어요' },
+            { title: '거의 다 됐어요', subtitle: '옷장에 넣을 준비를 하고 있어요' },
+          ]}
         />
       )}
 
@@ -308,8 +311,8 @@ export function RecognizeResultPage() {
       </section>
 
       <div className="recognize-actions">
-        <button type="button" onClick={() => navigate('/closet/scan')}><strong>다시 스캔하기</strong><span>SCAN AGAIN</span></button>
-        <button type="button" onClick={() => navigate('/closet/scan/recognize/complete')}><strong>옷장에 넣기</strong><span>PUT IN MY CLOSET</span></button>
+        <button type="button" onClick={() => navigate('/closet/scan')}><strong>다시 스캔하기</strong></button>
+        <button type="button" onClick={() => navigate('/closet/scan/recognize/complete')}><strong>옷장에 넣기</strong></button>
       </div>
 
       <BottomNav active="closet" />
@@ -364,7 +367,6 @@ export function ClosetAddCompletePage() {
 
       <button className="closet-add-complete-button" type="button" onClick={() => navigate('/closet')}>
         <span>옷장으로 가기</span>
-        <small>GO TO MY CLOSET</small>
       </button>
 
       <BottomNav active="closet" />

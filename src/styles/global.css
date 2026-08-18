@@ -129,7 +129,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .product-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 21px 19px; padding: 17px 18px 0; }
 .product-card { min-width: 0; overflow: hidden; border-radius: 15px; background: #fff; }
 .product-card-clickable { cursor: pointer; outline: none; }
-.product-card-clickable:focus-visible { box-shadow: 0 0 0 3px #5b6a39; }
+.product-card-clickable:focus-visible { box-shadow: 0 0 0 3px #8b6b47; }
 /* 카드와 같은 흰색으로 통일 — 상품 이미지는 누끼(cutoutUrl) 우선이라 배경 이질감이 없다 */
 .product-image-wrap { position: relative; display: grid; height: 151px; place-items: center; background: #fff; }
 .product-image-wrap > img { width: 70%; height: 88%; object-fit: contain; }
@@ -153,7 +153,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
   max-width: 393px;
   min-height: 100svh;
   margin: 0 auto;
-  padding-bottom: 100px;
+  /* 우하단 플로팅 추가 버튼(bottom 96px)이 최하단에서 DNA 버튼과 겹치지 않게 여유 */
+  padding-bottom: 205px;
   overflow-x: hidden;
   overflow-y: visible;
   background: #fdf9f2;
@@ -176,8 +177,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .closet-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 19px; padding: 0 20px; }
 .closet-card { height: 197px; overflow: hidden; border-radius: 15px; background: #fff; }
 .closet-selectable-card { position: relative; cursor: pointer; outline: none; }
-.closet-selectable-card.selected { box-shadow: 0 0 0 3px #5b6a39 inset; }
-.closet-selectable-card:focus-visible { box-shadow: 0 0 0 3px #5b6a39; }
+.closet-selectable-card.selected { box-shadow: 0 0 0 3px #8b6b47 inset; }
+.closet-selectable-card:focus-visible { box-shadow: 0 0 0 3px #8b6b47; }
 /* overflow hidden + max 제한 — 세로로 긴 누끼가 이름 글자를 가리지 않게 */
 .closet-image-wrap { display: grid; height: 135px; place-items: center; overflow: hidden; }
 .closet-image-wrap img { width: 76%; height: 88%; max-height: 119px; object-fit: contain; }
@@ -185,7 +186,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .closet-info span { display: inline-flex; height: 20px; align-items: center; padding: 0 9px; border-radius: 30px; background: #eceae6; font-size: 9px; line-height: 20px; }
 .closet-info p { margin: 6px 0 0; overflow: hidden; color: #000; font-size: 14px; line-height: 24px; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
 
-.add-item-button { position: fixed; z-index: 8; bottom: 107px; left: 50%; display: flex; width: min(calc(100% - 40px), 353px); height: 73px; flex-direction: column; align-items: center; justify-content: center; border-radius: 25px; color: #fff; background: #5b6a39; transform: translateX(-50%); }
+.add-item-button { position: fixed; z-index: 8; bottom: 107px; left: 50%; display: flex; width: min(calc(100% - 40px), 353px); height: 73px; flex-direction: column; align-items: center; justify-content: center; border-radius: 25px; color: #fff; background: #8b6b47; transform: translateX(-50%); }
 .add-item-button span { font-size: 20px; font-weight: 500; line-height: 24px; }
 .add-item-button small { font-size: 14px; line-height: 24px; }
 
@@ -231,7 +232,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .scan-frame::after { right: -3px; bottom: -3px; border-right: 3px solid #fff; border-bottom: 3px solid #fff; }
 .scan-item-image { position: absolute; top: 50%; left: 50%; width: 78%; height: 62%; object-fit: contain; transform: translate(-50%, -50%); }
 .scan-plus { position: absolute; top: 50%; left: 50%; width: 19px; height: 19px; transform: translate(-50%, -50%); }
-.scan-actions { display: flex; align-items: center; justify-content: center; gap: 40px; margin-top: 31px; }
+/* 촬영(셔터) 가운데, 갤러리 오른쪽 */
+.scan-actions { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; justify-items: center; margin-top: 31px; padding: 0 44px; }
+.scan-actions-spacer { width: 50px; }
 .album-button, .camera-button { display: block; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .album-button { width: 50px; height: 50px; }
 .camera-button { width: 90px; height: 90px; }
@@ -240,7 +243,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .product-scan-button img { width: 100%; height: 100%; }
 .album-button input, .camera-button input { display: none; }
 .scan-error { margin: 8px 20px -20px; color: #b04636; font-size: 12px; text-align: center; }
-.scan-submit { display: block; width: calc(100% - 40px); height: 48px; margin: 15px auto 0; border: 0; border-radius: 20px; color: #fff; background: #5b6a39; cursor: pointer; font: inherit; font-size: 16px; }
+.scan-submit { display: block; width: calc(100% - 40px); height: 48px; margin: 15px auto 0; border: 0; border-radius: 20px; color: #fff; background: #8b6b47; cursor: pointer; font: inherit; font-size: 16px; }
 .scan-submit:disabled { cursor: wait; opacity: 0.7; }
 .scan-bottom-nav { position: fixed; }
 .product-scan-image { width: 84%; height: 68%; }
@@ -278,7 +281,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .recognize-actions { display: flex; flex-direction: column; gap: 10px; width: calc(100% - 40px); margin: 20px auto 0; }
 .recognize-actions button { display: flex; height: 73px; flex-direction: column; align-items: center; justify-content: center; border: 0; border-radius: 25px; cursor: pointer; font: inherit; }
 .recognize-actions button:first-child { color: #724c25; background: #fff; }
-.recognize-actions button:last-child { color: #fff; background: #5b6a39; }
+.recognize-actions button:last-child { color: #fff; background: #8b6b47; }
 .recognize-actions strong { font-size: 20px; font-weight: 500; line-height: 24px; }
 .recognize-actions span { font-size: 14px; line-height: 24px; }
 .recognize-bottom-nav { position: fixed; }
@@ -303,7 +306,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .style-dna-error { display: flex; min-height: 520px; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
 .style-dna-error h1 { margin: 0; color: #724c25; font-size: 20px; font-weight: 500; }
 .style-dna-error p { margin: 12px 0 20px; color: #9e7143; font-size: 13px; }
-.style-dna-error button { width: 180px; height: 52px; border: 0; border-radius: 25px; color: #fff; background: #5b6a39; cursor: pointer; font: inherit; }
+.style-dna-error button { width: 180px; height: 52px; border: 0; border-radius: 25px; color: #fff; background: #8b6b47; cursor: pointer; font: inherit; }
 @keyframes style-dna-loading-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @media (prefers-reduced-motion: reduce) { .style-dna-loading img { animation: none; } }
 .recommendation-section { padding-top: 14px; }
@@ -380,12 +383,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .detail-actions { display: flex; gap: 4px; width: calc(100% - 36px); margin: 16px auto 0; }
 .buy-button, .reserve-button { display: flex; height: 64px; flex: 1; flex-direction: column; align-items: center; justify-content: center; border: 0; border-radius: 25px; font: inherit; font-size: 20px; font-weight: 500; line-height: 24px; text-align: center; }
 .buy-button { color: #724c25; background: #fff; }
-.reserve-button { color: #fff; background: #5b6a39; cursor: pointer; }
+.reserve-button { color: #fff; background: #8b6b47; cursor: pointer; }
 .buy-button small, .reserve-button small { font-size: 14px; font-weight: 400; line-height: 24px; }
-.closet-add-detail-button { display: flex; width: calc(100% - 36px); height: 58px; flex-direction: column; align-items: center; justify-content: center; margin: 10px auto 0; border: 1px solid #5b6a39; border-radius: 22px; color: #5b6a39; background: transparent; cursor: pointer; font: inherit; font-size: 17px; line-height: 21px; }
+.closet-add-detail-button { display: flex; width: calc(100% - 36px); height: 58px; flex-direction: column; align-items: center; justify-content: center; margin: 10px auto 0; border: 1px solid #8b6b47; border-radius: 22px; color: #8b6b47; background: transparent; cursor: pointer; font: inherit; font-size: 17px; line-height: 21px; }
 .closet-add-detail-button small { font-size: 12px; line-height: 20px; }
 .closet-add-detail-button:disabled { cursor: wait; opacity: 0.6; }
-.closet-add-detail-message { width: calc(100% - 36px); margin: 8px auto 0; color: #5b6a39; font-size: 13px; line-height: 20px; text-align: center; }
+.closet-add-detail-message { width: calc(100% - 36px); margin: 8px auto 0; color: #8b6b47; font-size: 13px; line-height: 20px; text-align: center; }
 
 .profile-screen { position: relative; width: 100%; max-width: 390px; min-height: 100svh; margin: 0 auto; padding-bottom: 88px; color: #1c1c18; background: #fdf9f2; }
 .profile-content { display: flex; flex-direction: column; gap: 16px; padding: 68px 14px 100px; }
@@ -491,7 +494,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .checkout-total { position: fixed; z-index: 5; bottom: 0; left: 50%; width: min(100%, 393px); height: 129px; padding: 14px 20px 15px; border-radius: 25px 25px 0 0; background: #fff; transform: translateX(-50%); }
 .checkout-total p { display: flex; justify-content: space-between; margin: 0 4px 8px; font-size: 14px; line-height: 24px; }
 .checkout-total p strong { color: #9e7143; font-size: 18px; font-weight: 500; }
-.checkout-total button { display: flex; width: 100%; height: 65px; flex-direction: column; align-items: center; justify-content: center; border: 0; border-radius: 25px; color: #fff; background: #5b6a39; cursor: pointer; font: inherit; font-size: 20px; font-weight: 500; line-height: 24px; }
+.checkout-total button { display: flex; width: 100%; height: 65px; flex-direction: column; align-items: center; justify-content: center; border: 0; border-radius: 25px; color: #fff; background: #8b6b47; cursor: pointer; font: inherit; font-size: 20px; font-weight: 500; line-height: 24px; }
 .checkout-total button small { font-size: 14px; font-weight: 400; line-height: 24px; }
 
 .login-request-content {
@@ -538,7 +541,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   margin: 35px auto 0;
   border-radius: 25px;
   color: #fff;
-  background: #5b6a39;
+  background: #8b6b47;
   font-size: 20px;
   font-weight: 500;
   line-height: 24px;
@@ -604,7 +607,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   border: 0;
   border-radius: 25px;
   color: #fff;
-  background: #5b6a39;
+  background: #8b6b47;
   cursor: pointer;
   font: inherit;
   font-size: 20px;
@@ -727,7 +730,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   border: 0;
   border-radius: 25px;
   color: #fff;
-  background: #5b6a39;
+  background: #8b6b47;
   cursor: pointer;
   font: inherit;
   font-size: 20px;
@@ -809,7 +812,7 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
   border: 0;
   border-radius: 25px;
   color: #fff;
-  background: #5b6a39;
+  background: #8b6b47;
   cursor: pointer;
   font: inherit;
   transform: translateX(-50%);
@@ -837,7 +840,7 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
 .mood-card strong { font-size: 18px; font-weight: 500; line-height: 24px; }
 .mood-card small { margin-top: 2px; font-size: 12px; line-height: 24px; }
 .mood-selection-error { min-height: 18px; margin: 8px 20px -2px; color: #b04636; font-size: 12px; text-align: center; }
-.mood-see-looks-button { position: absolute; bottom: 130px; left: 20px; display: flex; width: calc(100% - 40px); height: 73px; flex-direction: column; align-items: center; justify-content: center; border: 0; border-radius: 25px; color: #fff; background: #5b6a39; cursor: pointer; font: inherit; }
+.mood-see-looks-button { position: absolute; bottom: 130px; left: 20px; display: flex; width: calc(100% - 40px); height: 73px; flex-direction: column; align-items: center; justify-content: center; border: 0; border-radius: 25px; color: #fff; background: #8b6b47; cursor: pointer; font: inherit; }
 .mood-see-looks-button:disabled { cursor: wait; opacity: 0.75; }
 .mood-see-looks-button span { font-size: 20px; font-weight: 500; line-height: 24px; }
 .mood-see-looks-button small { font-size: 14px; line-height: 24px; }
@@ -856,61 +859,44 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
 .outfit-card p { color: #724c25; font-size: 13px; line-height: 22px; }
 .empty-state { text-align: center; }
 
-.outfit-recommendation-screen { position: relative; width: 100%; max-width: 393px; min-height: 1580px; margin: 0 auto; padding-bottom: 110px; overflow: hidden; background: #fdf9f2; }
+.outfit-recommendation-screen { position: relative; width: 100%; max-width: 393px; min-height: 100svh; margin: 0 auto; padding-bottom: 110px; background: #fdf9f2; }
 .outfit-recommendation-header { position: relative; display: flex; height: 96px; align-items: center; justify-content: center; text-align: center; }
 .outfit-recommendation-header > div { display: flex; flex-direction: column; gap: 3px; }
 .outfit-recommendation-header strong { font-size: 20px; font-weight: 500; line-height: 24px; }
 .outfit-recommendation-header span { font-size: 14px; line-height: 24px; }
 .outfit-recommendation-header button { position: absolute; top: 0; left: 0; width: 73px; height: 63px; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .outfit-recommendation-header button img { display: block; width: 73px; height: 63px; }
-.outfit-recommendation-title { position: absolute; top: 111px; left: 30px; color: #724c25; }
+.outfit-recommendation-title { margin: 14px 30px 0; color: #724c25; }
 .outfit-recommendation-title h1 { margin: 0; font-size: 25px; font-weight: 500; line-height: 24px; letter-spacing: -0.04em; }
 .outfit-recommendation-title p { margin: 2px 0 0; font-size: 14px; line-height: 24px; }
-.outfit-recommendation-list { position: absolute; top: 191px; left: 20px; display: flex; flex-direction: column; gap: 15px; width: 353px; }
-.outfit-recommendation-card { width: 353px; height: 402px; overflow: hidden; border-radius: 15px; background: #fff; }
-.outfit-recommendation-image { width: 353px; height: 293px; overflow: hidden; border-radius: 15px 15px 0 0; background: #eceae6; }
+.outfit-recommendation-list { display: flex; flex-direction: column; gap: 15px; margin: 22px 20px 0; }
+.outfit-recommendation-card { position: relative; overflow: hidden; border-radius: 15px; background: #fff; }
+.outfit-recommendation-image { height: 293px; overflow: hidden; border-radius: 15px 15px 0 0; background: #eceae6; }
 .outfit-recommendation-image img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.outfit-recommendation-copy { display: flex; height: 109px; flex-direction: column; align-items: center; justify-content: flex-start; gap: 3px; padding: 17px 20px 0; text-align: center; }
+.outfit-recommendation-copy { display: flex; min-height: 96px; flex-direction: column; align-items: center; justify-content: flex-start; gap: 3px; padding: 17px 20px 14px; text-align: center; }
 .outfit-recommendation-copy strong { color: #724c25; font-size: 18px; font-weight: 500; line-height: 24px; }
 .outfit-recommendation-copy p { margin: 0; font-size: 12px; line-height: 24px; }
-.outfit-log-button { position: absolute; top: 1450px; left: 20px; display: flex; width: 353px; height: 73px; flex-direction: column; align-items: center; justify-content: center; border: 0; border-radius: 25px; color: #fff; background: #5b6a39; cursor: pointer; font: inherit; }
-.outfit-log-button span { font-size: 20px; font-weight: 500; line-height: 24px; }
-.outfit-log-button small { font-size: 14px; line-height: 24px; }
-.outfit-recommendation-nav { position: fixed; }
+/* 기록된 후보 — 뱃지 + 우상단 x(기록 취소), 재기록 방지 */
+.outfit-recommendation-card.recorded .outfit-recommendation-image { opacity: 0.75; }
+.look-recorded-badge { position: absolute; top: 12px; left: 12px; padding: 4px 12px; border-radius: 14px; background: #8b6b47; color: #fff; font-size: 11px; }
+.look-cancel-button { position: absolute; top: 8px; right: 8px; display: grid; width: 28px; height: 28px; place-items: center; padding: 0; border: 0; border-radius: 50%; background: rgba(32, 27, 16, 0.55); color: #fff; cursor: pointer; font-size: 15px; line-height: 1; }
 
-.outfit-detail-screen { position: relative; width: 100%; max-width: 393px; min-height: 1260px; margin: 0 auto; padding-bottom: 110px; overflow: hidden; background: #fdf9f2; }
+.outfit-detail-screen { position: relative; width: 100%; max-width: 393px; min-height: 100svh; margin: 0 auto; padding-bottom: 110px; background: #fdf9f2; }
 .outfit-detail-header { position: relative; display: flex; height: 96px; align-items: center; justify-content: center; text-align: center; }
 .outfit-detail-header > div { display: flex; flex-direction: column; gap: 3px; }
 .outfit-detail-header strong { font-size: 20px; font-weight: 500; line-height: 24px; }
 .outfit-detail-header span { font-size: 14px; line-height: 24px; }
 .outfit-detail-header button { position: absolute; top: 0; left: 0; width: 73px; height: 63px; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .outfit-detail-header button img { display: block; width: 73px; height: 63px; }
-.outfit-detail-look-title { position: absolute; top: 111px; left: 29px; margin: 0; color: #724c25; font-size: 25px; font-weight: 500; line-height: 24px; }
-.outfit-detail-image { position: absolute; top: 165px; left: 20px; display: block; width: 353px; height: 393px; border-radius: 15px; background: #eceae6; object-fit: cover; }
-.outfit-detail-description { position: absolute; top: 573px; left: 20px; display: grid; width: 353px; height: 155px; box-sizing: border-box; place-items: center; padding: 20px; border-radius: 15px; background: #fff; }
+/* 코디 상세 — 절대좌표(피그마) 대신 플로우: 내용 길이와 무관하게 공백·겹침이 없다 */
+.outfit-detail-look-title { margin: 14px 29px 0; color: #724c25; font-size: 25px; font-weight: 500; line-height: 24px; }
+.outfit-detail-image { display: block; width: calc(100% - 40px); height: 393px; margin: 14px auto 0; border-radius: 15px; background: #eceae6; object-fit: cover; }
+.outfit-detail-description { display: grid; width: calc(100% - 40px); box-sizing: border-box; place-items: center; margin: 15px auto 0; padding: 20px; border-radius: 15px; background: #fff; }
 .outfit-detail-description p { margin: 0; font-size: 14px; font-weight: 500; line-height: 24px; }
-.outfit-detail-matching { position: absolute; top: 742px; left: 20px; width: 353px; height: 162px; box-sizing: border-box; padding: 25px 30px 15px; border-radius: 15px; background: #fff; }
-.outfit-detail-matching h2, .outfit-detail-items h2 { margin: 0; font-size: 18px; font-weight: 500; line-height: 24px; }
-.outfit-detail-matching > span, .outfit-detail-items > span { display: block; margin: 0 0 19px 6px; font-size: 12px; line-height: 24px; }
-.matching-row { display: flex; height: 28px; align-items: center; gap: 12px; }
-.matching-row label { width: 62px; color: #9e7143; font-size: 14px; white-space: nowrap; }
-.matching-row > div { width: 218px; height: 16px; overflow: hidden; border-radius: 30px; background: #eceae6; }
-.matching-row i { display: flex; height: 16px; align-items: center; justify-content: flex-end; padding-right: 8px; box-sizing: border-box; border-radius: 30px; color: #fff; background: #724c25; font-size: 9px; font-style: normal; }
-.outfit-detail-items { position: absolute; top: 918px; left: 20px; width: 353px; height: 173px; box-sizing: border-box; padding: 16px 21px; border-radius: 15px; background: #fff; }
-.outfit-detail-items > span { margin-left: 4px; margin-bottom: 8px; }
-.used-item { display: flex; height: 40px; align-items: center; gap: 10px; }
-.used-item b { display: inline-flex; min-width: 60px; height: 28px; align-items: center; justify-content: center; border-radius: 30px; color: #fff; background: #cfb8a1; font-size: 14px; font-weight: 500; }
-.used-item p { margin: 0; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
-.used-item a { margin-left: auto; color: #9e7143; font-size: 9px; text-decoration: none; }
-.outfit-detail-actions { position: absolute; top: 1112px; left: 16px; display: flex; gap: 7px; }
-.outfit-detail-upload, .outfit-detail-save { height: 73px; border: 0; border-radius: 25px; cursor: pointer; font: inherit; }
-.outfit-detail-upload { display: flex; width: 215px; flex-direction: column; align-items: center; justify-content: center; color: #fff; background: #5b6a39; }
-.outfit-detail-upload span { font-size: 20px; font-weight: 500; line-height: 24px; }
-.outfit-detail-upload small { font-size: 14px; line-height: 24px; }
-.outfit-detail-save { display: flex; width: 78px; flex-direction: column; align-items: center; justify-content: center; color: #724c25; background: #eceae6; }
-.outfit-detail-save img { width: 16px; height: 24px; margin-bottom: 2px; }
-.outfit-detail-save span { font-size: 12px; line-height: 24px; }
-.outfit-detail-nav { position: fixed; }
+.outfit-detail-items { width: calc(100% - 40px); box-sizing: border-box; margin: 15px auto 0; padding: 16px 21px 18px; border-radius: 15px; background: #fff; }
+.outfit-detail-items h2 { margin: 0; font-size: 18px; font-weight: 500; line-height: 24px; }
+.outfit-detail-items > span { display: block; margin: 0 0 4px 4px; font-size: 12px; line-height: 24px; }
+.outfit-detail-actions { display: flex; width: calc(100% - 40px); margin: 18px auto 0; }
 
 .style-log-screen { position: relative; width: 100%; max-width: 393px; min-height: 100svh; margin: 0 auto; padding-bottom: 100px; background: #fdf9f2; }
 .style-log-header { position: relative; display: flex; height: 96px; align-items: center; justify-content: center; text-align: center; }
@@ -919,48 +905,33 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
 .style-log-header span { font-size: 14px; line-height: 24px; }
 .style-log-header button { position: absolute; top: 0; left: 0; width: 73px; height: 63px; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .style-log-header button img { display: block; width: 73px; height: 63px; }
-.style-log-upload-section { position: absolute; top: 111px; left: 31px; color: #724c25; }
-.style-log-upload-section h1 { margin: 0; font-size: 25px; font-weight: 500; line-height: 24px; }
-.style-log-upload-section p { margin: 2px 0 0; font-size: 14px; line-height: 24px; }
-.style-log-photo-box { position: absolute; top: 77px; left: -11px; display: grid; width: 353px; height: 131px; place-items: center; overflow: hidden; border-radius: 15px; background: rgba(207, 184, 161, 0.5); cursor: pointer; }
-.style-log-photo-box > img { width: 50px; height: 50px; object-fit: contain; }
-.style-log-photo-box.has-photo > img { width: 100%; height: 100%; object-fit: cover; }
-.style-log-photo-box input { display: none; }
-.style-log-note-card { position: absolute; top: 332px; left: 20px; width: 353px; height: 311px; box-sizing: border-box; padding: 20px; border-radius: 15px; background: #fff; }
+/* 코디 기록 작성 — 플로우 레이아웃: 화보 전체 노출, 버튼 잘림 없음 */
+.style-log-upload-section { margin: 14px 20px 0; color: #724c25; }
+.style-log-upload-section h1 { margin: 0 0 0 11px; font-size: 25px; font-weight: 500; line-height: 24px; }
+.style-log-upload-section p { margin: 2px 0 0 11px; font-size: 14px; line-height: 24px; }
+.style-log-photo-box { display: grid; place-items: center; overflow: hidden; margin-top: 14px; border-radius: 15px; background: rgba(207, 184, 161, 0.35); }
+.style-log-photo-box > img { display: block; width: 100%; height: auto; object-fit: contain; }
+.style-log-note-card { box-sizing: border-box; margin: 15px 20px 0; padding: 20px; border-radius: 15px; background: #fff; }
 .style-log-note-card h2 { margin: 0; font-size: 18px; font-weight: 500; line-height: 24px; }
 .style-log-note-card > span { display: block; font-size: 12px; line-height: 24px; }
-.style-log-note-card textarea { display: block; width: 312px; height: 206px; box-sizing: border-box; margin-top: 18px; padding: 14px; resize: none; border: 0; border-radius: 15px; outline: 0; color: #724c25; background: #eceae6; font: inherit; font-size: 14px; line-height: 24px; }
+.style-log-note-card textarea { display: block; width: 100%; height: 150px; box-sizing: border-box; margin-top: 14px; padding: 14px; resize: none; border: 0; border-radius: 15px; outline: 0; color: #724c25; background: #eceae6; font: inherit; font-size: 14px; line-height: 24px; }
 .style-log-note-card textarea::placeholder { color: #9e7143; opacity: 1; }
-.style-log-public-card { position: absolute; top: 659px; left: 20px; display: flex; width: 353px; height: 71px; align-items: center; justify-content: space-between; box-sizing: border-box; padding: 12px 20px; border-radius: 15px; background: #fff; box-shadow: 2px 2px 4px rgba(80, 53, 75, 0.2); }
-.style-log-public-card strong { display: block; font-size: 14px; font-weight: 500; line-height: 24px; }
-.style-log-public-card p { margin: 0; color: #9e7143; font-size: 12px; line-height: 24px; }
-.style-log-public-card button { position: relative; width: 52px; height: 24px; padding: 0; border: 0; border-radius: 30px; background: #eceae6; cursor: pointer; }
-.style-log-public-card button span { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: left 160ms ease; }
-.style-log-public-card button.on { background: #cfb8a1; }
-.style-log-public-card button.on span { left: 30px; }
-.style-log-message { position: absolute; top: 732px; left: 20px; width: 353px; margin: 0; color: #9e7143; font-size: 12px; text-align: center; }
-.style-log-submit { position: absolute; top: 757px; left: 20px; display: flex; width: 353px; height: 73px; flex-direction: column; align-items: center; justify-content: center; border: 0; border-radius: 25px; color: #fff; background: #5b6a39; cursor: pointer; font: inherit; }
+.style-log-message { width: calc(100% - 40px); margin: 10px auto 0; color: #9e7143; font-size: 12px; text-align: center; }
 .style-log-submit:disabled { cursor: wait; opacity: 0.75; }
-.style-log-submit span { font-size: 20px; font-weight: 500; line-height: 24px; }
-.style-log-submit small { font-size: 14px; line-height: 24px; }
-.style-log-nav { position: fixed; }
 
-.style-log-detail-screen { position: relative; width: 100%; max-width: 393px; min-height: 900px; margin: 0 auto; padding-bottom: 100px; overflow: hidden; background: #fdf9f2; }
+.style-log-detail-screen { position: relative; width: 100%; max-width: 393px; min-height: 100svh; margin: 0 auto; padding-bottom: 110px; background: #fdf9f2; }
 .style-log-detail-header { position: relative; display: flex; height: 96px; align-items: center; justify-content: center; text-align: center; }
 .style-log-detail-header > div { display: flex; flex-direction: column; gap: 3px; }
 .style-log-detail-header strong { font-size: 20px; font-weight: 500; line-height: 24px; }
 .style-log-detail-header span { font-size: 14px; line-height: 24px; }
 .style-log-detail-header button { position: absolute; top: 0; left: 0; width: 73px; height: 63px; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .style-log-detail-header button img { display: block; width: 73px; height: 63px; }
-.style-log-detail-image { position: absolute; top: 111px; left: 20px; display: block; width: 353px; height: 441px; border-radius: 15px; object-fit: cover; }
-.style-log-detail-note { position: absolute; top: 571px; left: 20px; display: flex; width: 353px; height: 120px; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; padding: 18px 20px; border-radius: 15px; background: rgba(217, 217, 217, 0.2); color: #724c25; text-align: center; }
+/* 기록 상세 — 플로우 레이아웃 */
+.style-log-detail-image { display: block; width: calc(100% - 40px); height: 441px; margin: 0 auto; border-radius: 15px; object-fit: cover; }
+.style-log-detail-note { display: flex; width: calc(100% - 40px); flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; margin: 15px auto 0; padding: 18px 20px; border-radius: 15px; background: rgba(217, 217, 217, 0.2); color: #724c25; text-align: center; }
 .style-log-detail-note strong { color: #000; font-size: 16px; font-weight: 500; line-height: 24px; }
 .style-log-detail-note p { margin: 12px 0 0; font-size: 14px; font-weight: 500; line-height: 24px; }
-.style-log-detail-items { position: absolute; top: 710px; left: 20px; display: flex; width: 353px; height: 113px; flex-direction: column; justify-content: center; box-sizing: border-box; padding: 15px 21px; border-radius: 15px; background: #fff; }
-.style-log-used-item { display: flex; height: 40px; align-items: center; gap: 10px; }
-.style-log-used-item b { display: inline-flex; min-width: 60px; height: 28px; align-items: center; justify-content: center; border-radius: 30px; color: #fff; background: #cfb8a1; font-size: 14px; font-weight: 500; }
-.style-log-used-item p { margin: 0; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
-.style-log-used-item a { margin-left: auto; color: #9e7143; font-size: 9px; text-decoration: none; }
+.style-log-detail-items { width: calc(100% - 40px); box-sizing: border-box; margin: 15px auto 0; padding: 15px 21px 18px; border-radius: 15px; background: #fff; }
 .style-log-detail-nav { position: fixed; }
 
 .style-calendar-screen { position: relative; width: 100%; max-width: 393px; min-height: 900px; margin: 0 auto; padding-bottom: 100px; overflow: hidden; background: #fdf9f2; }
@@ -1088,14 +1059,14 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
 .closet-fab {
   position: fixed;
   z-index: 9;
-  bottom: 178px;
+  bottom: 96px;
   left: 50%;
   display: grid;
   width: 56px;
   height: 56px;
   place-items: center;
   border-radius: 50%;
-  background: #5b6a39;
+  background: #8b6b47;
   color: #fff;
   font-size: 30px;
   font-weight: 300;
@@ -1129,7 +1100,7 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
 .item-modal-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin-bottom: 14px; }
 .item-modal-chips span { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 14px; background: #f6f1e6; font-size: 12px; }
 .item-modal-chips small { color: #9a8d74; font-size: 10px; }
-.item-modal-close { width: 100%; height: 42px; border: 0; border-radius: 14px; background: #5b6a39; color: #fff; cursor: pointer; font: inherit; }
+.item-modal-close { width: 100%; height: 42px; border: 0; border-radius: 14px; background: #8b6b47; color: #fff; cursor: pointer; font: inherit; }
 
 /* 코디에 사용된 아이템 썸네일 — 탭하면 옷 정보(OWN) 또는 상품 페이지(MCM) */
 .used-item-thumbs { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
@@ -1189,7 +1160,7 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
   padding: 8px 22px;
   border: 0;
   border-radius: 18px;
-  background: #5b6a39;
+  background: #8b6b47;
   color: #fff;
   cursor: pointer;
   font: inherit;
@@ -1207,6 +1178,25 @@ button:not(:disabled):active,
 .login-request-button:active {
   filter: brightness(0.94);
 }
+
+/* 로딩 오버레이 멘트 순환 — 바뀔 때 살짝 페이드 */
+.loading-overlay-copy { display: flex; flex-direction: column; align-items: center; gap: 6px; animation: overlay-fade 0.5s ease; }
+@keyframes overlay-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* CTA 통일 — 단일 라인·컴팩트·웜 브라운 (영문 서브라벨 제거, 팀 확정) */
+.style-log-submit { display: flex; width: calc(100% - 40px); align-items: center; justify-content: center; margin: 14px auto 0; border: 0; color: #fff; background: #8b6b47; cursor: pointer; font: inherit; }
+.outfit-detail-upload { display: flex; flex: 1; align-items: center; justify-content: center; border: 0; color: #fff; background: #8b6b47; cursor: pointer; font: inherit; }
+.outfit-detail-upload:disabled { cursor: default; opacity: 0.55; }
+.mood-see-looks-button, .outfit-detail-upload, .style-log-submit, .closet-actions .add-item-button, .closet-add-complete-button, .closet-add-detail-button, .login-submit, .signup-submit, .login-request-button {
+  height: 52px;
+  border-radius: 16px;
+}
+.mood-see-looks-button span, .outfit-detail-upload span, .style-log-submit span, .closet-actions .add-item-button span, .closet-add-complete-button span, .closet-add-detail-button span, .login-submit span, .signup-submit span, .login-request-button span {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+.closet-actions .closet-cancel-button { background: #b7ab90; }
 
 /* 무드 화면 날짜 선택 — 캘린더 아이콘 탭 = date picker (wornDate) */
 .mood-calendar-button { position: relative; display: inline-flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }

@@ -127,7 +127,8 @@ export function ShopPage() {
               <FadeImg src={assetUrl(product.cutoutUrl || product.imageUrl)} alt="" loading="lazy" />
             </div>
             <div className="product-info">
-              <span className="product-brand">MCM</span>
+              {/* 전부 MCM이라 브랜드 뱃지는 무의미 — 카테고리 뱃지로 (팀 확정) */}
+              <span className="product-brand">{productCategory(product)}</span>
               <p>{product.name}</p>
               <strong>{formatPrice(product.price)}</strong>
             </div>
@@ -246,7 +247,6 @@ export function ProductDetailPage() {
 
       <button className="closet-add-detail-button" type="button" onClick={handleAddToCloset} disabled={isAddingToCloset}>
         <span>{isAddingToCloset ? '추가 중...' : '옷장에 편입하기'}</span>
-        <small>{isAddingToCloset ? 'ADDING TO CLOSET' : 'ADD TO MY CLOSET'}</small>
       </button>
       {closetMessage && <p className="closet-add-detail-message" role="status">{closetMessage}</p>}
       </>)}

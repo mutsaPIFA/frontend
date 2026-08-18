@@ -36,7 +36,6 @@ export function LoginRequestPage() {
         </div>
         <Link className="login-request-button" to="/login" data-node-id="53:37">
           <span>로그인</span>
-          <small>LOGIN</small>
         </Link>
       </div>
     </main>
@@ -105,8 +104,7 @@ export function LoginPage() {
           />
           {error && <p className="login-error" role="alert">{error}</p>}
           <button className="login-submit" type="submit" disabled={isSubmitting} data-node-id="210:2">
-            <span>{isSubmitting ? '로그인 중' : '로그인'}</span>
-            <small>{isSubmitting ? 'PLEASE WAIT' : 'LOGIN'}</small>
+            <span>{isSubmitting ? '로그인 중...' : '로그인'}</span>
           </button>
         </form>
 
@@ -172,8 +170,7 @@ export function SignupPage() {
           {error && <p className="signup-error" role="alert">{error}</p>}
 
           <button className="signup-submit" type="submit" disabled={isSubmitting} data-node-id="72:47">
-            <span>{isSubmitting ? '가입 중' : '회원가입'}</span>
-            <small>{isSubmitting ? 'PLEASE WAIT' : 'SIGN UP'}</small>
+            <span>{isSubmitting ? '가입 중...' : '회원가입'}</span>
           </button>
         </form>
       </div>

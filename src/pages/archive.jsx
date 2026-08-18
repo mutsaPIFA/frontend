@@ -14,11 +14,17 @@ export function StyleLogPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [message, setMessage] = useState('')
   const [wornDate] = useState(() => stylingSession.logDate() || new Date().toISOString().slice(0, 10))
+  const outfitIndex = stylingSession.selectedIndex()
   const outfit = stylingSession.selectedOutfit()
+  const isRecorded = Boolean(stylingSession.recordedLooks()[outfitIndex])
 
   async function handleSave() {
     if (!outfit.moodId) {
       setMessage('먼저 추천 코디를 선택해 주세요.')
+      return
+    }
+    if (isRecorded) {
+      setMessage('이미 기록한 코디예요. 후보 화면에서 기록을 취소하면 다시 저장할 수 있어요.')
       return
     }
     setIsSaving(true)
@@ -39,6 +45,7 @@ export function StyleLogPage() {
         }),
       })
       stylingSession.setSavedLook(savedLook)
+      if (savedLook?.id != null) stylingSession.setRecordedLook(outfitIndex, savedLook.id)
       stylingSession.clearLogDate()
       invalidateApiCache('looks:')
       invalidateApiCache('profile')
@@ -73,7 +80,9 @@ export function StyleLogPage() {
       </section>
 
       {message && <p className="style-log-message" role="status">{message}</p>}
-      <button className="style-log-submit" type="button" onClick={handleSave} disabled={isSaving}><span>{isSaving ? '저장 중' : '업로드하기'}</span><small>{isSaving ? 'SAVING' : 'UPLOAD'}</small></button>
+      <button className="style-log-submit" type="button" onClick={handleSave} disabled={isSaving || isRecorded}>
+        <span>{isRecorded ? '이미 기록한 코디예요' : isSaving ? '저장 중...' : '기록하기'}</span>
+      </button>
 
       <BottomNav active="style" />
     </main>
