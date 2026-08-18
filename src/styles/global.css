@@ -1186,12 +1186,8 @@ button:not(:disabled):active,
 @keyframes float-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 @keyframes rise-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
-/* 마스코트는 항상 살짝 떠 있는다 */
-.home-intro img,
-.mood-curator-message img,
-.style-calendar-message img,
-.closet-add-complete-image,
-.profile-avatar img { animation: float-bob 2.6s ease-in-out infinite; }
+/* 부유는 "안내하는 순간"에만 — 로딩 오버레이·무드 화면 꼬미·선택된 무드 (상시 부유는 과해서 제외, 팀 확정) */
+.mood-curator-message img { animation: float-bob 2.6s ease-in-out infinite; }
 
 /* 카드·리스트 스태거 등장 */
 :is(.mood-grid, .product-grid, .closet-grid, .outfit-recommendation-list, .recommendation-list) > * { animation: rise-in 0.45s ease-out both; }
