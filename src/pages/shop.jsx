@@ -50,7 +50,6 @@ export function ShopPage() {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
-  const { wishedIds, toggleWish } = useWishlist()
 
   // 타이핑마다 API를 쏘지 않게 300ms 디바운스
   useEffect(() => {
@@ -155,15 +154,6 @@ export function ShopPage() {
           >
             <div className="product-image-wrap">
               <FadeImg src={assetUrl(product.cutoutUrl || product.imageUrl)} alt="" loading="lazy" />
-              <button
-                className="favorite-button"
-                type="button"
-                aria-label={wishedIds.has(product.id) ? '찜 해제' : '찜하기'}
-                aria-pressed={wishedIds.has(product.id)}
-                onClick={(event) => { event.stopPropagation(); toggleWish(product) }}
-              >
-                <img src={`/assets/home/${wishedIds.has(product.id) ? 'heart-filled.svg' : 'heart-outline.svg'}`} alt="" />
-              </button>
             </div>
             <div className="product-info">
               {/* 전부 MCM이라 브랜드 뱃지는 무의미 — 카테고리 뱃지로 (팀 확정) */}
