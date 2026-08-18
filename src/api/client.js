@@ -1,5 +1,4 @@
 const BACKEND_URL_KEY = 'mcm_backend_url'
-const AI_URL_KEY = 'mcm_ai_url'
 const DEFAULT_BACKEND_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
 function normalizeBaseUrl(value, fallback) {
@@ -17,18 +16,13 @@ export function getBackendUrl() {
   return normalizeBaseUrl(localStorage.getItem(BACKEND_URL_KEY), DEFAULT_BACKEND_URL)
 }
 
-export function getAiUrl() {
-  return normalizeBaseUrl(localStorage.getItem(AI_URL_KEY), 'http://localhost:8000')
-}
-
-export function saveServerUrls({ backendUrl, aiUrl }) {
+export function saveServerUrls({ backendUrl }) {
   localStorage.setItem(BACKEND_URL_KEY, normalizeBaseUrl(backendUrl, DEFAULT_BACKEND_URL))
-  localStorage.setItem(AI_URL_KEY, normalizeBaseUrl(aiUrl, 'http://localhost:8000'))
 }
 
 export function clearServerUrls() {
   localStorage.removeItem(BACKEND_URL_KEY)
-  localStorage.removeItem(AI_URL_KEY)
+  localStorage.removeItem('mcm_ai_url')
 }
 
 export function assetUrl(value) {
