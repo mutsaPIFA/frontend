@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { apiRequest, assetUrl } from '../api/client.js'
 import BottomNav from '../components/BottomNav.jsx'
 import FadeImg from '../components/FadeImg.jsx'
+import ItemInfoModal from '../components/ItemInfoModal.jsx'
 import LoadingOverlay from '../components/LoadingOverlay.jsx'
 import { invalidateApiCache, useApi } from '../hooks/useApi.js'
 import { closetItemImage, scanItemName } from '../lib/format.js'
@@ -11,24 +12,41 @@ import { stylingSession } from '../lib/stylingSession.js'
 
 export function ClosetPage() {
   const navigate = useNavigate()
-  const [source, setSource] = useState('')
+  const [source, setSource] = useState('OWN')
+  const [isSelecting, setIsSelecting] = useState(false)
   const [selectedIds, setSelectedIds] = useState([])
+  const [viewItem, setViewItem] = useState(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [deleteError, setDeleteError] = useState('')
 
   const { data, setData, isLoading, error: loadError, reload } = useApi(async () => {
-    const suffix = source ? `?source=${source}` : ''
-    const result = await apiRequest(`/api/v1/closet-items${suffix}`)
+    const result = await apiRequest(`/api/v1/closet-items?source=${source}`)
     return Array.isArray(result) ? result : []
   }, [source], { cacheKey: `closet:${source}` })
 
   const items = data || []
 
-  function toggleItem(id) {
-    setSelectedIds((current) => current.includes(id) ? current.filter((itemId) => itemId !== id) : [...current, id])
+  function switchSource(next) {
+    setSource(next)
+    setSelectedIds([])
+  }
+
+  // 기본 모드: 탭 = 옷 정보 보기 / 선택 모드: 탭 = 선택 토글
+  function handleCardTap(item) {
+    if (!isSelecting) {
+      setViewItem(item)
+      return
+    }
+    setSelectedIds((current) => current.includes(item.id) ? current.filter((itemId) => itemId !== item.id) : [...current, item.id])
+  }
+
+  function toggleSelecting() {
+    setIsSelecting((current) => !current)
+    setSelectedIds([])
   }
 
   function buildDna() {
+    if (selectedIds.length === 0) return
     stylingSession.setDnaItemIds(selectedIds)
     navigate('/style-dna')
   }
@@ -54,20 +72,22 @@ export function ClosetPage() {
       <header className="closet-header">
         <button className="back-button" type="button" aria-label="뒤로 가기" onClick={() => window.history.back()} />
         <div className="closet-heading"><strong>내 옷장</strong><span>MY CLOSET</span></div>
-        <button
-          className="closet-delete-button"
-          type="button"
-          aria-label="선택한 아이템 삭제"
-          disabled={selectedIds.length === 0}
-          onClick={() => setIsDeleteModalOpen(true)}
-        >
-          <img src="/assets/closet/trash.svg" alt="" />
-        </button>
+        {isSelecting && (
+          <button
+            className="closet-delete-button"
+            type="button"
+            aria-label="선택한 아이템 삭제"
+            disabled={selectedIds.length === 0}
+            onClick={() => setIsDeleteModalOpen(true)}
+          >
+            <img src="/assets/closet/trash.svg" alt="" />
+          </button>
+        )}
       </header>
 
       <div className="closet-tabs" role="tablist" aria-label="옷장 출처">
-        <button className={!source ? 'active' : ''} type="button" onClick={() => setSource('')} role="tab" aria-selected={!source}>전체</button>
-        <button className={source === 'MCM' ? 'active' : ''} type="button" onClick={() => setSource('MCM')} role="tab" aria-selected={source === 'MCM'}>MCM</button>
+        <button className={source === 'OWN' ? 'active' : ''} type="button" onClick={() => switchSource('OWN')} role="tab" aria-selected={source === 'OWN'}>OWN</button>
+        <button className={source === 'MCM' ? 'active' : ''} type="button" onClick={() => switchSource('MCM')} role="tab" aria-selected={source === 'MCM'}>MCM</button>
       </div>
 
       <section className="closet-grid" aria-label="내 옷장 아이템">
@@ -85,20 +105,22 @@ export function ClosetPage() {
         )}
         {items.map((item) => (
           <article
-            className={`closet-card closet-selectable-card ${selectedIds.includes(item.id) ? 'selected' : ''}`}
+            className={`closet-card closet-selectable-card ${isSelecting && selectedIds.includes(item.id) ? 'selected' : ''}`}
             key={item.id}
             role="button"
             tabIndex={0}
-            aria-pressed={selectedIds.includes(item.id)}
-            onClick={() => toggleItem(item.id)}
+            aria-pressed={isSelecting ? selectedIds.includes(item.id) : undefined}
+            onClick={() => handleCardTap(item)}
             onKeyDown={(event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault()
-                toggleItem(item.id)
+                handleCardTap(item)
               }
             }}
           >
-            <img className="dna-selection-icon" src={`/assets/closet/${selectedIds.includes(item.id) ? 'selected.svg' : 'unselected.svg'}`} alt={selectedIds.includes(item.id) ? '선택됨' : '선택 안 됨'} />
+            {isSelecting && (
+              <img className="dna-selection-icon" src={`/assets/closet/${selectedIds.includes(item.id) ? 'selected.svg' : 'unselected.svg'}`} alt={selectedIds.includes(item.id) ? '선택됨' : '선택 안 됨'} />
+            )}
             <div className="closet-image-wrap">
               <FadeImg src={closetItemImage(item)} alt="" loading="lazy" />
             </div>
@@ -110,16 +132,29 @@ export function ClosetPage() {
         ))}
       </section>
 
+      <Link className="closet-fab" to="/closet/scan" aria-label="아이템 추가하기">+</Link>
+
       <div className="closet-actions">
-        <Link className="add-item-button closet-add-item-button" to="/closet/scan">
-          <span>아이템 추가하기</span>
-          <small>ADD ITEM</small>
-        </Link>
-        <button className="add-item-button dna-build-button closet-dna-button" type="button" onClick={buildDna} disabled={selectedIds.length === 0}>
-          <span>스타일 DNA 만들기 {selectedIds.length > 0 ? `(${selectedIds.length})` : ''}</span>
-          <small>BUILD MY DNA</small>
-        </button>
+        {!isSelecting ? (
+          <button className="add-item-button dna-build-button" type="button" onClick={toggleSelecting}>
+            <span>스타일 DNA 만들기</span>
+            <small>BUILD MY DNA</small>
+          </button>
+        ) : (
+          <>
+            <button className="add-item-button closet-cancel-button" type="button" onClick={toggleSelecting}>
+              <span>선택 취소</span>
+              <small>CANCEL</small>
+            </button>
+            <button className="add-item-button dna-build-button" type="button" onClick={buildDna} disabled={selectedIds.length === 0}>
+              <span>DNA 생성하기 {selectedIds.length > 0 ? `(${selectedIds.length})` : ''}</span>
+              <small>BUILD MY DNA</small>
+            </button>
+          </>
+        )}
       </div>
+
+      <ItemInfoModal item={viewItem} onClose={() => setViewItem(null)} />
 
       {isDeleteModalOpen && (
         <div className="closet-delete-modal-layer" role="presentation" onClick={() => setIsDeleteModalOpen(false)}>

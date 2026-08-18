@@ -37,9 +37,7 @@ export function ProfilePage() {
     <main className="profile-screen" data-node-id="4:2912">
       <div className="profile-content">
         <header className="profile-header">
-          <button className="profile-back-button" type="button" aria-label="홈으로 가기" onClick={() => navigate('/')}>
-            <img src="/assets/profile/back.svg" alt="" />
-          </button>
+          <span />
           <div><strong>프로필</strong><span>PROFILE</span></div>
           <span />
         </header>

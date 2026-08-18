@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { apiRequest, assetUrl } from '../api/client.js'
 import BottomNav from '../components/BottomNav.jsx'
 import FadeImg from '../components/FadeImg.jsx'
+import ItemInfoModal from '../components/ItemInfoModal.jsx'
 import { invalidateApiCache, useApi } from '../hooks/useApi.js'
 import { formatWornDate, scanItemName } from '../lib/format.js'
 import { stylingSession } from '../lib/stylingSession.js'
@@ -85,6 +86,7 @@ export function StyleLogDetailPage() {
   const candidate = useMemo(() => stylingSession.selectedOutfit(), [])
   const [fetchedProduct, setFetchedProduct] = useState(null)
   const [fetchedItems, setFetchedItems] = useState([])
+  const [viewItem, setViewItem] = useState(null)
 
   // 세션의 후보 데이터는 "방금 저장한 그 룩"과 구성이 일치할 때만 신뢰한다 —
   // 캘린더로 연 옛 룩에 최신 후보의 아이템·제품 이름이 섞이면 안 됨
@@ -131,11 +133,23 @@ export function StyleLogDetailPage() {
         {bodyText && <p>{bodyText}</p>}
       </section>
       <section className="style-log-detail-items">
-        <div className="style-log-used-item"><b>내 옷장</b><p>{closetItems.map((item) => item.name || scanItemName(item)).filter(Boolean).join(', ') || '—'}</p></div>
-        {product && (
-          <div className="style-log-used-item"><b>MCM 추천</b><p>{product.name}</p>{product.id && <Link to={`/products/${product.id}`}>보러가기</Link>}</div>
-        )}
+        <div className="used-item-thumbs">
+          {closetItems.map((item) => (
+            <button key={`own-${item.id}`} className="used-item-thumb" type="button" onClick={() => setViewItem(item)}>
+              <FadeImg src={assetUrl(item.cutoutUrl || item.imageUrl)} alt={scanItemName(item)} />
+              <small>{item.category || '아이템'}</small>
+            </button>
+          ))}
+          {product && (
+            <button key="mcm" className="used-item-thumb used-item-thumb-mcm" type="button" onClick={() => product.id && navigate(`/products/${product.id}`)}>
+              <FadeImg src={assetUrl(product.cutoutUrl || product.imageUrl)} alt={product.name} />
+              <em>MCM</em>
+              <small>{product.name}</small>
+            </button>
+          )}
+        </div>
       </section>
+      <ItemInfoModal item={viewItem} onClose={() => setViewItem(null)} />
       <BottomNav active="style" />
     </main>
   )

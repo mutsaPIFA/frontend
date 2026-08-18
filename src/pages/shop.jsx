@@ -39,9 +39,34 @@ export function ShopPage() {
 
   const products = data || []
   const visibleProducts = useMemo(() => {
-    if (category !== 'clothes') return products
-    return products.filter((product) => productCategory(product) === 'CLOTHES')
-  }, [products, category])
+    let list = products
+    if (category === 'clothes') list = products.filter((product) => productCategory(product) === 'CLOTHES')
+    // ALL 탭은 id순(시드 순서)이라 같은 시리즈가 연속으로 뜬다 — 고정 해시로 섞어 다양하게
+    if (!category && !debouncedQuery.trim()) {
+      list = [...list].sort((a, b) => ((a.id * 2654435761) % 4093) - ((b.id * 2654435761) % 4093))
+    }
+    return list
+  }, [products, category, debouncedQuery])
+
+  // 589개를 한 번에 그리지 않고 스크롤에 맞춰 20개씩 — 무한 스크롤 체감 + 성능
+  const [visibleCount, setVisibleCount] = useState(20)
+  const sentinelRef = useRef(null)
+
+  useEffect(() => {
+    setVisibleCount(20)
+  }, [category, debouncedQuery])
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel) return undefined
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) setVisibleCount((count) => count + 20)
+    }, { rootMargin: '600px' })
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [])
+
+  const pagedProducts = visibleProducts.slice(0, visibleCount)
 
   return (
     <main className="home-screen" data-node-id="257:661">
@@ -84,7 +109,7 @@ export function ShopPage() {
           </div>
         )}
         {!isLoading && !loadError && visibleProducts.length === 0 && <p className="grid-status">조건에 맞는 상품이 없어요.</p>}
-        {visibleProducts.map((product) => (
+        {pagedProducts.map((product) => (
           <article
             className="product-card product-card-clickable"
             key={product.id}
@@ -108,6 +133,7 @@ export function ShopPage() {
             </div>
           </article>
         ))}
+        <div ref={sentinelRef} aria-hidden="true" />
       </section>
 
       <BottomNav active="shop" />
