@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiRequest } from '../api/client.js'
+import { clearApiCache } from '../hooks/useApi.js'
 
 const splashPuppyImage = '/assets/splash-puppy.png'
 const loginRequestPuppyImage = '/assets/login-request-puppy.png'
@@ -60,6 +61,7 @@ export function LoginPage() {
         body: JSON.stringify({ email, password }),
       })
       localStorage.setItem('mcm_access_token', result.accessToken)
+      clearApiCache()
       navigate('/')
     } catch (submitError) {
       setError(submitError.message)
@@ -141,6 +143,7 @@ export function SignupPage() {
         }),
       })
       localStorage.setItem('mcm_access_token', result.accessToken)
+      clearApiCache()
       navigate('/')
     } catch (submitError) {
       setError(submitError.message)

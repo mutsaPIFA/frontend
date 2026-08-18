@@ -178,9 +178,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .closet-selectable-card { position: relative; cursor: pointer; outline: none; }
 .closet-selectable-card.selected { box-shadow: 0 0 0 3px #5b6a39 inset; }
 .closet-selectable-card:focus-visible { box-shadow: 0 0 0 3px #5b6a39; }
-.closet-image-wrap { display: grid; height: 135px; place-items: center; }
-.closet-image-wrap img { width: 76%; height: 88%; object-fit: contain; }
-.closet-image-wrap.belt img { width: 82%; height: 55%; }
+/* overflow hidden + max 제한 — 세로로 긴 누끼가 이름 글자를 가리지 않게 */
+.closet-image-wrap { display: grid; height: 135px; place-items: center; overflow: hidden; }
+.closet-image-wrap img { width: 76%; height: 88%; max-height: 119px; object-fit: contain; }
 .closet-info { padding: 0 23px 12px; }
 .closet-info span { display: inline-flex; height: 20px; align-items: center; padding: 0 9px; border-radius: 30px; background: #eceae6; font-size: 9px; line-height: 20px; }
 .closet-info p { margin: 6px 0 0; overflow: hidden; color: #000; font-size: 14px; line-height: 24px; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
@@ -360,7 +360,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .detail-header strong { font-size: 20px; line-height: 24px; }
 .detail-header span { font-size: 14px; line-height: 24px; }
 .detail-hero { width: calc(100% - 40px); margin: 17px auto 0; overflow: hidden; border-radius: 15px; background: #fff; }
-.detail-image-panel { display: grid; height: 263px; place-items: center; background: #fff; }
+/* 상세는 CDN 원본(회색 스튜디오 배경)이라 패널을 같은 회색으로 — 이미지 경계가 사라진다 (목록은 흰색+누끼) */
+.detail-image-panel { display: grid; height: 263px; place-items: center; background: #f6f6f6; }
 .detail-image-panel img { width: 80%; height: 78%; object-fit: contain; }
 .detail-overview { height: 272px; padding: 39px 20px 20px; text-align: center; }
 .detail-overview h1 { margin: 0; font-size: 20px; font-weight: 500; line-height: 24px; letter-spacing: -0.04em; }
@@ -1082,6 +1083,130 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
 .mood-grid { padding-bottom: 240px; }
 
 .style-log-photo-empty { margin: 0; padding: 40px 20px; color: #7a715f; font-size: 13px; text-align: center; }
+
+/* 옷장 플로팅 추가 버튼 — 스크롤과 무관하게 우하단 고정 */
+.closet-fab {
+  position: fixed;
+  z-index: 9;
+  bottom: 178px;
+  left: 50%;
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  border-radius: 50%;
+  background: #5b6a39;
+  color: #fff;
+  font-size: 30px;
+  font-weight: 300;
+  line-height: 1;
+  transform: translateX(calc(min(100vw, 393px) / 2 - 76px));
+  box-shadow: 0 4px 12px rgba(48, 44, 29, 0.28);
+}
+
+/* 아이템 정보 모달 — 옷장 카드·코디 사용 아이템 공용 */
+.item-modal-layer {
+  position: fixed;
+  z-index: 40;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(32, 27, 16, 0.45);
+}
+.item-modal {
+  width: min(100%, 320px);
+  padding: 20px 20px 16px;
+  border-radius: 20px;
+  background: #fff;
+  text-align: center;
+}
+.item-modal-image { display: grid; height: 210px; place-items: center; overflow: hidden; margin-bottom: 12px; }
+.item-modal-image img { width: auto; max-width: 82%; height: 100%; max-height: 210px; object-fit: contain; }
+.item-modal-title { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; }
+.item-modal-title strong { font-size: 16px; }
+.item-modal-title span { padding: 2px 9px; border-radius: 30px; background: #eceae6; font-size: 10px; }
+.item-modal-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin-bottom: 14px; }
+.item-modal-chips span { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 14px; background: #f6f1e6; font-size: 12px; }
+.item-modal-chips small { color: #9a8d74; font-size: 10px; }
+.item-modal-close { width: 100%; height: 42px; border: 0; border-radius: 14px; background: #5b6a39; color: #fff; cursor: pointer; font: inherit; }
+
+/* 코디에 사용된 아이템 썸네일 — 탭하면 옷 정보(OWN) 또는 상품 페이지(MCM) */
+.used-item-thumbs { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.used-item-thumb {
+  position: relative;
+  display: flex;
+  width: 86px;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 6px 7px;
+  border: 0;
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+  font: inherit;
+}
+.used-item-thumb img { width: 62px; height: 62px; object-fit: contain; }
+.used-item-thumb small { overflow: hidden; width: 100%; font-size: 10px; line-height: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.used-item-thumb em { position: absolute; top: 5px; left: 5px; padding: 1px 6px; border-radius: 10px; background: #eceae6; font-size: 8px; font-style: normal; }
+
+/* 옷장 선택 모드 버튼 2개 나란히 (기존 세로 스택 규칙 덮어씀) */
+.closet-actions { flex-direction: row; gap: 10px; }
+.closet-cancel-button { border: 0; cursor: pointer; font: inherit; background: #b7ab90; }
+
+/* 이미지 페이드인 — 공백→팝인 대신 부드럽게 */
+.fade-img { opacity: 0; transition: opacity 0.35s ease; }
+.fade-img.loaded { opacity: 1; }
+
+/* 긴 AI 작업 풀스크린 대기 연출 (스캔·코디 생성) */
+.loading-overlay {
+  position: fixed;
+  z-index: 60;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #fdf9f2;
+  text-align: center;
+}
+.loading-overlay-puppy { width: 168px; height: auto; margin-bottom: 14px; animation: overlay-bob 1.6s ease-in-out infinite; }
+.loading-overlay strong { font-size: 20px; line-height: 28px; }
+.loading-overlay p { margin: 0; color: #7a715f; font-size: 13px; line-height: 20px; }
+.loading-overlay-dots { display: flex; gap: 7px; margin-top: 16px; }
+.loading-overlay-dots i { width: 8px; height: 8px; border-radius: 50%; background: #9e7143; animation: overlay-dot 1.2s ease-in-out infinite; }
+.loading-overlay-dots i:nth-child(2) { animation-delay: 0.2s; }
+.loading-overlay-dots i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes overlay-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes overlay-dot { 0%, 100% { opacity: 0.25; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1); } }
+
+/* 에러 상태 재시도 */
+.retry-button {
+  display: block;
+  margin: 10px auto 0;
+  padding: 8px 22px;
+  border: 0;
+  border-radius: 18px;
+  background: #5b6a39;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+}
+
+/* 탭/버튼 눌림 피드백 — transform 충돌이 없는 brightness로 */
+button:not(:disabled):active,
+.product-card-clickable:active,
+.closet-selectable-card:active,
+.recommendation-row:active,
+.outfit-recommendation-card:active,
+.bottom-nav a:active,
+.add-item-button:active,
+.login-request-button:active {
+  filter: brightness(0.94);
+}
 
 /* 무드 화면 날짜 선택 — 캘린더 아이콘 탭 = date picker (wornDate) */
 .mood-calendar-button { position: relative; display: inline-flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }

@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { apiRequest, assetUrl } from '../api/client.js'
 import BottomNav from '../components/BottomNav.jsx'
-import { useApi } from '../hooks/useApi.js'
+import FadeImg from '../components/FadeImg.jsx'
+import ItemInfoModal from '../components/ItemInfoModal.jsx'
+import { invalidateApiCache, useApi } from '../hooks/useApi.js'
 import { formatWornDate, scanItemName } from '../lib/format.js'
 import { stylingSession } from '../lib/stylingSession.js'
 
@@ -38,7 +40,10 @@ export function StyleLogPage() {
       })
       stylingSession.setSavedLook(savedLook)
       stylingSession.clearLogDate()
-      navigate('/archive/detail')
+      invalidateApiCache('looks:')
+      invalidateApiCache('profile')
+      // 작성 화면을 히스토리에서 대체 — 상세에서 뒤로가면 코디 상세로 자연스럽게 돌아간다
+      navigate('/archive/detail', { replace: true })
     } catch (saveError) {
       setMessage(saveError.message)
     } finally {
@@ -57,7 +62,7 @@ export function StyleLogPage() {
         <h1>기록할 코디</h1><p>{formatWornDate(wornDate)}</p>
         <div className="style-log-photo-box has-photo">
           {outfit.imageUrl
-            ? <img src={assetUrl(outfit.imageUrl)} alt="기록할 코디 화보" />
+            ? <FadeImg src={assetUrl(outfit.imageUrl)} alt="기록할 코디 화보" />
             : <p className="style-log-photo-empty">추천 코디를 먼저 선택해 주세요.</p>}
         </div>
       </section>
@@ -81,6 +86,7 @@ export function StyleLogDetailPage() {
   const candidate = useMemo(() => stylingSession.selectedOutfit(), [])
   const [fetchedProduct, setFetchedProduct] = useState(null)
   const [fetchedItems, setFetchedItems] = useState([])
+  const [viewItem, setViewItem] = useState(null)
 
   // 세션의 후보 데이터는 "방금 저장한 그 룩"과 구성이 일치할 때만 신뢰한다 —
   // 캘린더로 연 옛 룩에 최신 후보의 아이템·제품 이름이 섞이면 안 됨
@@ -118,20 +124,32 @@ export function StyleLogDetailPage() {
   return (
     <main className="style-log-detail-screen" data-node-id="257:558">
       <header className="style-log-detail-header">
-        <button type="button" aria-label="뒤로 가기" onClick={() => navigate('/archive')}><img src="/assets/style-log-detail/mark.svg" alt="" /></button>
+        <button type="button" aria-label="뒤로 가기" onClick={() => navigate(-1)}><img src="/assets/style-log-detail/mark.svg" alt="" /></button>
         <div><strong>코디 기록</strong><span>MY STYLE LOG</span></div>
       </header>
-      <img className="style-log-detail-image" src={imageUrl} alt="저장한 코디" />
+      <FadeImg className="style-log-detail-image" src={imageUrl} alt="저장한 코디" />
       <section className="style-log-detail-note">
         <strong>{formatWornDate(look?.wornDate)}{concept ? ` · ${concept}` : ''}</strong>
         {bodyText && <p>{bodyText}</p>}
       </section>
       <section className="style-log-detail-items">
-        <div className="style-log-used-item"><b>내 옷장</b><p>{closetItems.map((item) => item.name || scanItemName(item)).filter(Boolean).join(', ') || '—'}</p></div>
-        {product && (
-          <div className="style-log-used-item"><b>MCM 추천</b><p>{product.name}</p>{product.id && <Link to={`/products/${product.id}`}>보러가기</Link>}</div>
-        )}
+        <div className="used-item-thumbs">
+          {closetItems.map((item) => (
+            <button key={`own-${item.id}`} className="used-item-thumb" type="button" onClick={() => setViewItem(item)}>
+              <FadeImg src={assetUrl(item.cutoutUrl || item.imageUrl)} alt={scanItemName(item)} />
+              <small>{item.category || '아이템'}</small>
+            </button>
+          ))}
+          {product && (
+            <button key="mcm" className="used-item-thumb used-item-thumb-mcm" type="button" onClick={() => product.id && navigate(`/products/${product.id}`)}>
+              <FadeImg src={assetUrl(product.cutoutUrl || product.imageUrl)} alt={product.name} />
+              <em>MCM</em>
+              <small>{product.name}</small>
+            </button>
+          )}
+        </div>
       </section>
+      <ItemInfoModal item={viewItem} onClose={() => setViewItem(null)} />
       <BottomNav active="style" />
     </main>
   )
@@ -147,7 +165,7 @@ export function StyleCalendarPage() {
   const { data } = useApi(async () => {
     const result = await apiRequest(`/api/v1/looks?month=${monthKey}`)
     return Array.isArray(result) ? result : []
-  }, [monthKey])
+  }, [monthKey], { cacheKey: `looks:${monthKey}` })
   const looks = data || []
 
   const markedDates = looks.map((look) => Number(String(look.wornDate).slice(-2)))
@@ -159,7 +177,7 @@ export function StyleCalendarPage() {
   return (
     <main className="style-calendar-screen" data-node-id="257:209">
       <header className="style-calendar-header">
-        <button type="button" aria-label="뒤로 가기" onClick={() => navigate('/archive')}><img src="/assets/style-calendar/mark.svg" alt="" /></button>
+        <button type="button" aria-label="뒤로 가기" onClick={() => navigate(-1)}><img src="/assets/style-calendar/mark.svg" alt="" /></button>
         <div><strong>코디 캘린더</strong><span>STYLE CALENDAR</span></div>
       </header>
       <div className="style-calendar-message"><img src="/assets/style-calendar/calendar-puppy.png" alt="" /><span>그동안의 코디를 확인해볼까요 ?</span></div>

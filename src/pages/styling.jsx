@@ -1,7 +1,10 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { apiRequest, assetUrl } from '../api/client.js'
 import BottomNav from '../components/BottomNav.jsx'
+import FadeImg from '../components/FadeImg.jsx'
+import ItemInfoModal from '../components/ItemInfoModal.jsx'
+import LoadingOverlay from '../components/LoadingOverlay.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { scanItemName } from '../lib/format.js'
 import { moodIcon } from '../lib/vocab.js'
@@ -12,20 +15,12 @@ export function MoodSelectionPage() {
   const [selectedMoodId, setSelectedMoodId] = useState(null)
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState('')
-  // 기록 날짜 (계약 §4-5 wornDate — 미선택 시 서버가 오늘로) — 룩 저장 화면이 읽는다
-  const [logDate, setLogDate] = useState(() => stylingSession.logDate())
 
-  const { data, error: moodError } = useApi(async () => {
+  const { data, error: moodError, reload } = useApi(async () => {
     const result = await apiRequest('/api/v1/moods')
     return Array.isArray(result) ? result : []
-  }, [])
+  }, [], { cacheKey: 'moods' })
   const moods = data || []
-
-  function handleLogDateChange(event) {
-    const value = event.target.value
-    setLogDate(value)
-    stylingSession.setLogDate(value)
-  }
 
   async function handleSeeLooks() {
     if (!selectedMoodId) {
@@ -57,27 +52,28 @@ export function MoodSelectionPage() {
           <img src="/assets/mood/back.svg" alt="" />
         </button>
         <div><strong>오늘은 어떤 하루예요 ?</strong><span>WHAT’S THE VIBE ?</span></div>
-        <label className="mood-calendar-button" aria-label="기록 날짜 선택">
-          <img className="mood-calendar" src="/assets/mood/calendar.svg" alt="" />
-          {logDate && <small>{logDate.slice(5).replace('-', '.')}</small>}
-          <input type="date" value={logDate} onChange={handleLogDateChange} />
-        </label>
+        <span />
       </header>
 
       <div className="mood-curator-message">
         <img src="/assets/mood/curator.png" alt="" />
-        <span>취향은 지키고, 포인트 한 스푼 더했어요.</span>
+        <span>무드를 고르면 내 옷장으로 코디를 만들어 드려요.</span>
       </div>
 
       <section className="mood-grid" aria-label="오늘의 무드 선택">
-        {moods.length === 0 && <p className="grid-status" role={moodError ? 'alert' : 'status'}>{moodError || '무드를 불러오고 있어요...'}</p>}
+        {moods.length === 0 && (
+          <div className="grid-status" role={moodError ? 'alert' : 'status'}>
+            <p>{moodError || '무드를 불러오고 있어요...'}</p>
+            {moodError && <button className="retry-button" type="button" onClick={reload}>다시 시도</button>}
+          </div>
+        )}
         {moods.map((mood) => (
           <button
             key={mood.id}
             className={`mood-card ${selectedMoodId === mood.id ? 'selected' : ''}`}
             type="button"
             aria-pressed={selectedMoodId === mood.id}
-            onClick={() => setSelectedMoodId(mood.id)}
+            onClick={() => setSelectedMoodId((current) => current === mood.id ? null : mood.id)}
           >
             <span className="mood-icon"><img src={moodIcon(mood.iconKey)} alt="" /></span>
             <strong>{mood.label}</strong>
@@ -91,6 +87,14 @@ export function MoodSelectionPage() {
         <span>{isCreating ? '코디를 만들고 있어요' : '추천 코디 보기'}</span>
         <small>{isCreating ? 'CREATING LOOKS' : 'SEE LOOKS'}</small>
       </button>
+
+      {isCreating && (
+        <LoadingOverlay
+          image="/assets/loading-puppy-outfit.png"
+          title="코디를 생성하고 있어요"
+          subtitle="옷장과 MCM을 조합해 화보를 만드는 중 (20~40초)"
+        />
+      )}
 
       <BottomNav active="style" />
     </main>
@@ -124,7 +128,7 @@ export function OutfitRecommendationPage() {
         )}
         {looks.map((look, index) => (
           <article className="outfit-recommendation-card" key={index} onClick={() => { stylingSession.setSelectedIndex(index); navigate('/styling/recommendation/detail') }} role="button" tabIndex="0">
-            <div className="outfit-recommendation-image"><img src={assetUrl(look.imageUrl)} alt={`LOOK ${index + 1}`} /></div>
+            <div className="outfit-recommendation-image"><FadeImg src={assetUrl(look.imageUrl)} alt={`LOOK ${index + 1}`} /></div>
             {/* concept=제목(영어 작명, 폴백이면 없음) · reason=추천 이유 본문 — 계약 §4-4 */}
             <div className="outfit-recommendation-copy"><strong>LOOK {index + 1}{look.concept ? ` · ${look.concept}` : ''}</strong><p>{look.reason}</p></div>
           </article>
@@ -143,6 +147,7 @@ export function OutfitRecommendationPage() {
 
 export function OutfitDetailPage() {
   const navigate = useNavigate()
+  const [viewItem, setViewItem] = useState(null)
   const index = stylingSession.selectedIndex()
   const outfit = stylingSession.selectedOutfit()
   const closetItems = outfit.closetItems || []
@@ -158,7 +163,7 @@ export function OutfitDetailPage() {
       </header>
 
       <h1 className="outfit-detail-look-title">LOOK {index + 1}{outfit.concept ? ` · ${outfit.concept}` : ''}</h1>
-      <img className="outfit-detail-image" src={imageUrl} alt={`LOOK ${index + 1}`} />
+      <FadeImg className="outfit-detail-image" src={imageUrl} alt={`LOOK ${index + 1}`} />
 
       {reason && (
         <section className="outfit-detail-description">
@@ -168,15 +173,29 @@ export function OutfitDetailPage() {
 
       <section className="outfit-detail-items">
         <h2>사용된 아이템</h2><span>ITEMS USED</span>
-        <div className="used-item"><b>내 옷장</b><p>{closetItems.map((item) => item.name || scanItemName(item)).filter(Boolean).join(', ') || '—'}</p></div>
-        {outfit.mcmProduct && (
-          <div className="used-item"><b>MCM 추천</b><p>{outfit.mcmProduct.name}</p>{outfit.mcmProduct.id && <Link to={`/products/${outfit.mcmProduct.id}`}>보러가기</Link>}</div>
-        )}
+        {/* 코디는 전부 내 옷장 아이템 조합 — 탭하면 옷 정보, MCM은 상품 페이지로 */}
+        <div className="used-item-thumbs">
+          {closetItems.map((item) => (
+            <button key={`own-${item.id}`} className="used-item-thumb" type="button" onClick={() => setViewItem(item)}>
+              <FadeImg src={assetUrl(item.cutoutUrl || item.imageUrl)} alt={scanItemName(item)} />
+              <small>{item.category || '아이템'}</small>
+            </button>
+          ))}
+          {outfit.mcmProduct && (
+            <button key="mcm" className="used-item-thumb used-item-thumb-mcm" type="button" onClick={() => outfit.mcmProduct.id && navigate(`/products/${outfit.mcmProduct.id}`)}>
+              <FadeImg src={assetUrl(outfit.mcmProduct.cutoutUrl || outfit.mcmProduct.imageUrl)} alt={outfit.mcmProduct.name} />
+              <em>MCM</em>
+              <small>{outfit.mcmProduct.name}</small>
+            </button>
+          )}
+        </div>
       </section>
 
       <div className="outfit-detail-actions">
         <button className="outfit-detail-upload" type="button" onClick={() => navigate('/archive')}><span>이 코디 기록하기</span><small>UPLOAD THIS STYLE LOG</small></button>
       </div>
+
+      <ItemInfoModal item={viewItem} onClose={() => setViewItem(null)} />
 
       <BottomNav active="style" />
     </main>

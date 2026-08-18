@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { apiRequest, assetUrl } from '../api/client.js'
 import BottomNav from '../components/BottomNav.jsx'
-import { useApi } from '../hooks/useApi.js'
+import FadeImg from '../components/FadeImg.jsx'
+import { invalidateApiCache, useApi } from '../hooks/useApi.js'
 import { formatPrice, formatSize } from '../lib/format.js'
 import { categoryOptions } from '../lib/vocab.js'
 import { stylingSession } from '../lib/stylingSession.js'
@@ -27,20 +28,45 @@ export function ShopPage() {
     return () => clearTimeout(timer)
   }, [query])
 
-  const { data, isLoading, error: loadError } = useApi(async () => {
+  const { data, isLoading, error: loadError, reload } = useApi(async () => {
     const params = new URLSearchParams()
     if (debouncedQuery.trim()) params.set('query', debouncedQuery.trim())
     if (category && category !== 'clothes') params.set('category', category)
     const suffix = params.toString() ? `?${params.toString()}` : ''
     const result = await apiRequest(`/api/v1/mcm-products${suffix}`)
     return Array.isArray(result) ? result : []
-  }, [debouncedQuery, category])
+  }, [debouncedQuery, category], { cacheKey: `products:${category}:${debouncedQuery.trim()}` })
 
   const products = data || []
   const visibleProducts = useMemo(() => {
-    if (category !== 'clothes') return products
-    return products.filter((product) => productCategory(product) === 'CLOTHES')
-  }, [products, category])
+    let list = products
+    if (category === 'clothes') list = products.filter((product) => productCategory(product) === 'CLOTHES')
+    // ALL 탭은 id순(시드 순서)이라 같은 시리즈가 연속으로 뜬다 — 고정 해시로 섞어 다양하게
+    if (!category && !debouncedQuery.trim()) {
+      list = [...list].sort((a, b) => ((a.id * 2654435761) % 4093) - ((b.id * 2654435761) % 4093))
+    }
+    return list
+  }, [products, category, debouncedQuery])
+
+  // 589개를 한 번에 그리지 않고 스크롤에 맞춰 20개씩 — 무한 스크롤 체감 + 성능
+  const [visibleCount, setVisibleCount] = useState(20)
+  const sentinelRef = useRef(null)
+
+  useEffect(() => {
+    setVisibleCount(20)
+  }, [category, debouncedQuery])
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel) return undefined
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) setVisibleCount((count) => count + 20)
+    }, { rootMargin: '600px' })
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [])
+
+  const pagedProducts = visibleProducts.slice(0, visibleCount)
 
   return (
     <main className="home-screen" data-node-id="257:661">
@@ -76,9 +102,14 @@ export function ShopPage() {
 
       <section className="product-grid" aria-label="MCM 상품 목록">
         {isLoading && <p className="grid-status">상품을 불러오고 있어요...</p>}
-        {!isLoading && loadError && <p className="grid-status" role="alert">{loadError}</p>}
+        {!isLoading && loadError && (
+          <div className="grid-status" role="alert">
+            <p>{loadError}</p>
+            <button className="retry-button" type="button" onClick={reload}>다시 시도</button>
+          </div>
+        )}
         {!isLoading && !loadError && visibleProducts.length === 0 && <p className="grid-status">조건에 맞는 상품이 없어요.</p>}
-        {visibleProducts.map((product) => (
+        {pagedProducts.map((product) => (
           <article
             className="product-card product-card-clickable"
             key={product.id}
@@ -93,7 +124,7 @@ export function ShopPage() {
             }}
           >
             <div className="product-image-wrap">
-              <img src={assetUrl(product.cutoutUrl || product.imageUrl)} alt="" loading="lazy" />
+              <FadeImg src={assetUrl(product.cutoutUrl || product.imageUrl)} alt="" loading="lazy" />
             </div>
             <div className="product-info">
               <span className="product-brand">MCM</span>
@@ -102,6 +133,7 @@ export function ShopPage() {
             </div>
           </article>
         ))}
+        <div ref={sentinelRef} aria-hidden="true" />
       </section>
 
       <BottomNav active="shop" />
@@ -117,9 +149,10 @@ export function ProductDetailPage() {
   const [imageIndex, setImageIndex] = useState(0)
   const carouselRef = useRef(null)
 
-  const { data: product, error: loadError } = useApi(
+  const { data: product, error: loadError, reload } = useApi(
     () => apiRequest(`/api/v1/mcm-products/${id}`),
     [id],
+    { cacheKey: `product:${id}` },
   )
 
   useEffect(() => {
@@ -148,6 +181,9 @@ export function ProductDetailPage() {
         method: 'POST',
         body: JSON.stringify({ mcmProductId: Number(id) }),
       })
+      invalidateApiCache('closet:')
+      invalidateApiCache('dna:')
+      invalidateApiCache('recommendations:')
       setClosetMessage('내 옷장에 추가됐어요.')
     } catch (error) {
       setClosetMessage(error.message)
@@ -164,14 +200,17 @@ export function ProductDetailPage() {
       </header>
 
       {!product && (
-        <p className="grid-status" role={loadError ? 'alert' : 'status'}>{loadError || '상품 정보를 불러오고 있어요...'}</p>
+        <div className="grid-status" role={loadError ? 'alert' : 'status'}>
+          <p>{loadError || '상품 정보를 불러오고 있어요...'}</p>
+          {loadError && <button className="retry-button" type="button" onClick={reload}>다시 시도</button>}
+        </div>
       )}
       {product && (<>
       <section className="detail-hero">
         <div className="detail-image-panel">
           <div className="detail-carousel" ref={carouselRef} onScroll={handleCarouselScroll}>
             {carouselImages.map((src, i) => (
-              <img key={i} src={assetUrl(src)} alt={`${product.name} ${i + 1}`} loading={i === 0 ? 'eager' : 'lazy'} />
+              <FadeImg key={i} src={assetUrl(src)} alt={`${product.name} ${i + 1}`} loading={i === 0 ? 'eager' : 'lazy'} />
             ))}
           </div>
           {carouselImages.length > 1 && (
@@ -220,7 +259,8 @@ export function ProductDetailPage() {
 export function RecommendationsPage() {
   const [category, setCategory] = useState('ALL')
 
-  const { data, isLoading, error: loadError } = useApi(async () => {
+  const dnaIds = stylingSession.dnaItemIds()
+  const { data, isLoading, error: loadError, reload } = useApi(async () => {
     // DNA 화면을 거쳤으면 그때 고른 아이템, 아니면 옷장 전체로 추천받는다
     let ids = stylingSession.dnaItemIds()
     if (ids.length === 0) {
@@ -238,7 +278,7 @@ export function RecommendationsPage() {
         price: item.product?.price,
         imageUrl: item.product?.cutoutUrl || item.product?.imageUrl,
       }))
-  }, [])
+  }, [], { cacheKey: `recommendations:${dnaIds.join(',')}` })
 
   const products = data || []
 
@@ -257,10 +297,15 @@ export function RecommendationsPage() {
 
       <section className="recommendation-list" aria-label="추천 상품">
         {isLoading && <p className="grid-status">옷장을 분석해 추천을 고르고 있어요...</p>}
-        {!isLoading && loadError && <p className="grid-status" role="alert">{loadError}</p>}
+        {!isLoading && loadError && (
+          <div className="grid-status" role="alert">
+            <p>{loadError}</p>
+            <button className="retry-button" type="button" onClick={reload}>다시 시도</button>
+          </div>
+        )}
         {products.map((product) => (
           <Link className="recommendation-row" key={product.id} to={`/products/${product.id}`}>
-            <div className="recommendation-thumb"><img src={assetUrl(product.imageUrl)} alt="" /></div>
+            <div className="recommendation-thumb"><FadeImg src={assetUrl(product.imageUrl)} alt="" /></div>
             <div className="recommendation-details">
               <p>{product.name}</p>
               <small>{product.subtitle}</small>
