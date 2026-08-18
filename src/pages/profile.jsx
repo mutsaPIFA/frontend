@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiRequest } from '../api/client.js'
 import BottomNav from '../components/BottomNav.jsx'
-import { useApi } from '../hooks/useApi.js'
+import { clearApiCache, useApi } from '../hooks/useApi.js'
 
 export function ProfilePage() {
   const navigate = useNavigate()
@@ -14,7 +14,7 @@ export function ProfilePage() {
       apiRequest('/api/v1/looks'),
     ])
     return { me, looks: Array.isArray(looks) ? looks : [] }
-  }, [])
+  }, [], { cacheKey: 'profile' })
 
   const me = data?.me || { nickname: '', email: '' }
   const looks = data?.looks || []
@@ -28,6 +28,7 @@ export function ProfilePage() {
     } finally {
       localStorage.removeItem('mcm_access_token')
       sessionStorage.clear()
+      clearApiCache()
       navigate('/login', { replace: true })
     }
   }

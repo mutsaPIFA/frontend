@@ -6,6 +6,7 @@ import { ClosetAddCompletePage, ClosetPage, RecognizeResultPage, ScanPage, Style
 import { MoodSelectionPage, OutfitDetailPage, OutfitRecommendationPage } from './pages/styling.jsx'
 import { StyleCalendarPage, StyleLogDetailPage, StyleLogPage } from './pages/archive.jsx'
 import { ProfilePage } from './pages/profile.jsx'
+import ScrollManager from './components/ScrollManager.jsx'
 
 function PlaceholderPage({ title }) {
   return (
@@ -46,6 +47,8 @@ function RootPage() {
 
 function App() {
   return (
+    <>
+    <ScrollManager />
     <Routes>
       <Route path="/" element={<RootPage />} />
       <Route path="/auth/request" element={<LoginRequestPage />} />
@@ -68,6 +71,7 @@ function App() {
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="*" element={<PlaceholderPage title="페이지를 찾을 수 없습니다" />} />
     </Routes>
+    </>
   )
 }
 

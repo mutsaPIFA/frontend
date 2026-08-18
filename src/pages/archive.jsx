@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiRequest, assetUrl } from '../api/client.js'
 import BottomNav from '../components/BottomNav.jsx'
-import { useApi } from '../hooks/useApi.js'
+import FadeImg from '../components/FadeImg.jsx'
+import { invalidateApiCache, useApi } from '../hooks/useApi.js'
 import { formatWornDate, scanItemName } from '../lib/format.js'
 import { stylingSession } from '../lib/stylingSession.js'
 
@@ -38,7 +39,10 @@ export function StyleLogPage() {
       })
       stylingSession.setSavedLook(savedLook)
       stylingSession.clearLogDate()
-      navigate('/archive/detail')
+      invalidateApiCache('looks:')
+      invalidateApiCache('profile')
+      // 작성 화면을 히스토리에서 대체 — 상세에서 뒤로가면 코디 상세로 자연스럽게 돌아간다
+      navigate('/archive/detail', { replace: true })
     } catch (saveError) {
       setMessage(saveError.message)
     } finally {
@@ -57,7 +61,7 @@ export function StyleLogPage() {
         <h1>기록할 코디</h1><p>{formatWornDate(wornDate)}</p>
         <div className="style-log-photo-box has-photo">
           {outfit.imageUrl
-            ? <img src={assetUrl(outfit.imageUrl)} alt="기록할 코디 화보" />
+            ? <FadeImg src={assetUrl(outfit.imageUrl)} alt="기록할 코디 화보" />
             : <p className="style-log-photo-empty">추천 코디를 먼저 선택해 주세요.</p>}
         </div>
       </section>
@@ -118,10 +122,10 @@ export function StyleLogDetailPage() {
   return (
     <main className="style-log-detail-screen" data-node-id="257:558">
       <header className="style-log-detail-header">
-        <button type="button" aria-label="뒤로 가기" onClick={() => navigate('/archive')}><img src="/assets/style-log-detail/mark.svg" alt="" /></button>
+        <button type="button" aria-label="뒤로 가기" onClick={() => navigate(-1)}><img src="/assets/style-log-detail/mark.svg" alt="" /></button>
         <div><strong>코디 기록</strong><span>MY STYLE LOG</span></div>
       </header>
-      <img className="style-log-detail-image" src={imageUrl} alt="저장한 코디" />
+      <FadeImg className="style-log-detail-image" src={imageUrl} alt="저장한 코디" />
       <section className="style-log-detail-note">
         <strong>{formatWornDate(look?.wornDate)}{concept ? ` · ${concept}` : ''}</strong>
         {bodyText && <p>{bodyText}</p>}
@@ -147,7 +151,7 @@ export function StyleCalendarPage() {
   const { data } = useApi(async () => {
     const result = await apiRequest(`/api/v1/looks?month=${monthKey}`)
     return Array.isArray(result) ? result : []
-  }, [monthKey])
+  }, [monthKey], { cacheKey: `looks:${monthKey}` })
   const looks = data || []
 
   const markedDates = looks.map((look) => Number(String(look.wornDate).slice(-2)))
@@ -159,7 +163,7 @@ export function StyleCalendarPage() {
   return (
     <main className="style-calendar-screen" data-node-id="257:209">
       <header className="style-calendar-header">
-        <button type="button" aria-label="뒤로 가기" onClick={() => navigate('/archive')}><img src="/assets/style-calendar/mark.svg" alt="" /></button>
+        <button type="button" aria-label="뒤로 가기" onClick={() => navigate(-1)}><img src="/assets/style-calendar/mark.svg" alt="" /></button>
         <div><strong>코디 캘린더</strong><span>STYLE CALENDAR</span></div>
       </header>
       <div className="style-calendar-message"><img src="/assets/style-calendar/calendar-puppy.png" alt="" /><span>그동안의 코디를 확인해볼까요 ?</span></div>

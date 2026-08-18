@@ -1083,6 +1083,59 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
 
 .style-log-photo-empty { margin: 0; padding: 40px 20px; color: #7a715f; font-size: 13px; text-align: center; }
 
+/* 이미지 페이드인 — 공백→팝인 대신 부드럽게 */
+.fade-img { opacity: 0; transition: opacity 0.35s ease; }
+.fade-img.loaded { opacity: 1; }
+
+/* 긴 AI 작업 풀스크린 대기 연출 (스캔·코디 생성) */
+.loading-overlay {
+  position: fixed;
+  z-index: 60;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #fdf9f2;
+  text-align: center;
+}
+.loading-overlay-puppy { width: 168px; height: auto; margin-bottom: 14px; animation: overlay-bob 1.6s ease-in-out infinite; }
+.loading-overlay strong { font-size: 20px; line-height: 28px; }
+.loading-overlay p { margin: 0; color: #7a715f; font-size: 13px; line-height: 20px; }
+.loading-overlay-dots { display: flex; gap: 7px; margin-top: 16px; }
+.loading-overlay-dots i { width: 8px; height: 8px; border-radius: 50%; background: #9e7143; animation: overlay-dot 1.2s ease-in-out infinite; }
+.loading-overlay-dots i:nth-child(2) { animation-delay: 0.2s; }
+.loading-overlay-dots i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes overlay-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes overlay-dot { 0%, 100% { opacity: 0.25; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1); } }
+
+/* 에러 상태 재시도 */
+.retry-button {
+  display: block;
+  margin: 10px auto 0;
+  padding: 8px 22px;
+  border: 0;
+  border-radius: 18px;
+  background: #5b6a39;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+}
+
+/* 탭/버튼 눌림 피드백 — transform 충돌이 없는 brightness로 */
+button:not(:disabled):active,
+.product-card-clickable:active,
+.closet-selectable-card:active,
+.recommendation-row:active,
+.outfit-recommendation-card:active,
+.bottom-nav a:active,
+.add-item-button:active,
+.login-request-button:active {
+  filter: brightness(0.94);
+}
+
 /* 무드 화면 날짜 선택 — 캘린더 아이콘 탭 = date picker (wornDate) */
 .mood-calendar-button { position: relative; display: inline-flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
 .mood-calendar-button small { font-size: 10px; color: #9e7143; font-weight: 600; }

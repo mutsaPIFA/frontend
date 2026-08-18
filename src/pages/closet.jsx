@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiRequest, assetUrl } from '../api/client.js'
 import BottomNav from '../components/BottomNav.jsx'
-import { useApi } from '../hooks/useApi.js'
+import FadeImg from '../components/FadeImg.jsx'
+import LoadingOverlay from '../components/LoadingOverlay.jsx'
+import { invalidateApiCache, useApi } from '../hooks/useApi.js'
 import { closetItemImage, scanItemName } from '../lib/format.js'
 import { tagColorHex, tagOptions } from '../lib/vocab.js'
 import { stylingSession } from '../lib/stylingSession.js'
@@ -14,11 +16,11 @@ export function ClosetPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [deleteError, setDeleteError] = useState('')
 
-  const { data, setData, isLoading, error: loadError } = useApi(async () => {
+  const { data, setData, isLoading, error: loadError, reload } = useApi(async () => {
     const suffix = source ? `?source=${source}` : ''
     const result = await apiRequest(`/api/v1/closet-items${suffix}`)
     return Array.isArray(result) ? result : []
-  }, [source])
+  }, [source], { cacheKey: `closet:${source}` })
 
   const items = data || []
 
@@ -35,6 +37,10 @@ export function ClosetPage() {
     setDeleteError('')
     try {
       await Promise.all(selectedIds.map((id) => apiRequest(`/api/v1/closet-items/${id}`, { method: 'DELETE' })))
+      // 옷장 구성이 바뀌면 이를 재료로 쓰는 화면 캐시도 무효화
+      invalidateApiCache('closet:')
+      invalidateApiCache('dna:')
+      invalidateApiCache('recommendations:')
       setData((current) => (current || []).filter((item) => !selectedIds.includes(item.id)))
       setSelectedIds([])
       setIsDeleteModalOpen(false)
@@ -66,7 +72,12 @@ export function ClosetPage() {
 
       <section className="closet-grid" aria-label="내 옷장 아이템">
         {isLoading && <p className="grid-status">옷장을 여는 중이에요...</p>}
-        {!isLoading && loadError && <p className="grid-status" role="alert">{loadError}</p>}
+        {!isLoading && loadError && (
+          <div className="grid-status" role="alert">
+            <p>{loadError}</p>
+            <button className="retry-button" type="button" onClick={reload}>다시 시도</button>
+          </div>
+        )}
         {!isLoading && !loadError && items.length === 0 && (
           <div className="grid-status closet-empty">
             <p>아직 옷장이 비어 있어요.<br />첫 아이템을 스캔해서 채워볼까요?</p>
@@ -89,7 +100,7 @@ export function ClosetPage() {
           >
             <img className="dna-selection-icon" src={`/assets/closet/${selectedIds.includes(item.id) ? 'selected.svg' : 'unselected.svg'}`} alt={selectedIds.includes(item.id) ? '선택됨' : '선택 안 됨'} />
             <div className="closet-image-wrap">
-              <img src={closetItemImage(item)} alt="" />
+              <FadeImg src={closetItemImage(item)} alt="" loading="lazy" />
             </div>
             <div className="closet-info">
               <span>{item.source === 'MCM' ? 'MCM' : 'OWN'}</span>
@@ -201,6 +212,14 @@ export function ScanPage() {
         {isUploading ? '분석 중...' : selectedFile ? '아이템 분석하기' : '사진을 선택해주세요'}
       </button>
 
+      {isUploading && (
+        <LoadingOverlay
+          image="/assets/loading-puppy.png"
+          title="아이템을 살펴보고 있어요"
+          subtitle="배경을 지우고 종류·색·소재를 알아내는 중 (10~40초)"
+        />
+      )}
+
       <BottomNav active="closet" />
     </main>
   )
@@ -287,6 +306,12 @@ export function ClosetAddCompletePage() {
     }
 
     apiRequest('/api/v1/closet-items', { method: 'POST', body: JSON.stringify(request) })
+      .then(() => {
+        // 옷장이 늘었다 — 옷장·DNA·추천 화면 캐시 무효화
+        invalidateApiCache('closet:')
+        invalidateApiCache('dna:')
+        invalidateApiCache('recommendations:')
+      })
       .catch((requestError) => setError(requestError.message))
   }, [navigate, scanResult])
 
@@ -315,7 +340,8 @@ export function ClosetAddCompletePage() {
 export function StyleDnaPage() {
   const recommendationCarouselRef = useRef(null)
 
-  const { data, isLoading, error } = useApi(async () => {
+  const dnaIds = stylingSession.dnaItemIds()
+  const { data, isLoading, error, reload } = useApi(async () => {
     // 옷장에서 고르고 왔으면 그 아이템, 직접 진입이면 옷장 전체로 분석
     let ids = stylingSession.dnaItemIds()
     if (ids.length === 0) {
@@ -329,7 +355,7 @@ export function StyleDnaPage() {
       apiRequest('/api/v1/recommendations', { method: 'POST', body }),
     ])
     return { dna, recommendation }
-  }, [])
+  }, [], { cacheKey: `dna:${dnaIds.join(',')}` })
 
   const dna = data?.dna
   const recommendationPicks = [data?.recommendation?.bestPick, ...(data?.recommendation?.more ?? [])]
@@ -362,7 +388,7 @@ export function StyleDnaPage() {
         <section className="style-dna-error" role="alert">
           <h1>스타일 DNA를 불러오지 못했어요</h1>
           <p>{error}</p>
-          <button type="button" onClick={() => window.location.reload()}>다시 시도하기</button>
+          <button type="button" onClick={reload}>다시 시도하기</button>
         </section>
       )}
 
@@ -394,7 +420,7 @@ export function StyleDnaPage() {
                 {recommendationPicks.map((pick, index) => (
                   <article className="recommendation-card" key={pick.product.id}>
                     <span className="perfect-match">{index === 0 ? 'PERFECT MATCH' : `MATCH ${index + 1}`}</span>
-                    <img className="recommendation-image" src={assetUrl(pick.product.imageUrl)} alt={pick.product.name} />
+                    <FadeImg className="recommendation-image" src={assetUrl(pick.product.imageUrl)} alt={pick.product.name} />
                     <p>{pick.product.name}</p>
                     <div className="recommendation-reason">
                       <div className="recommendation-reason-copy">

@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiRequest, assetUrl } from '../api/client.js'
 import BottomNav from '../components/BottomNav.jsx'
+import FadeImg from '../components/FadeImg.jsx'
+import LoadingOverlay from '../components/LoadingOverlay.jsx'
 import { useApi } from '../hooks/useApi.js'
 import { scanItemName } from '../lib/format.js'
 import { moodIcon } from '../lib/vocab.js'
@@ -15,10 +17,10 @@ export function MoodSelectionPage() {
   // 기록 날짜 (계약 §4-5 wornDate — 미선택 시 서버가 오늘로) — 룩 저장 화면이 읽는다
   const [logDate, setLogDate] = useState(() => stylingSession.logDate())
 
-  const { data, error: moodError } = useApi(async () => {
+  const { data, error: moodError, reload } = useApi(async () => {
     const result = await apiRequest('/api/v1/moods')
     return Array.isArray(result) ? result : []
-  }, [])
+  }, [], { cacheKey: 'moods' })
   const moods = data || []
 
   function handleLogDateChange(event) {
@@ -70,7 +72,12 @@ export function MoodSelectionPage() {
       </div>
 
       <section className="mood-grid" aria-label="오늘의 무드 선택">
-        {moods.length === 0 && <p className="grid-status" role={moodError ? 'alert' : 'status'}>{moodError || '무드를 불러오고 있어요...'}</p>}
+        {moods.length === 0 && (
+          <div className="grid-status" role={moodError ? 'alert' : 'status'}>
+            <p>{moodError || '무드를 불러오고 있어요...'}</p>
+            {moodError && <button className="retry-button" type="button" onClick={reload}>다시 시도</button>}
+          </div>
+        )}
         {moods.map((mood) => (
           <button
             key={mood.id}
@@ -91,6 +98,14 @@ export function MoodSelectionPage() {
         <span>{isCreating ? '코디를 만들고 있어요' : '추천 코디 보기'}</span>
         <small>{isCreating ? 'CREATING LOOKS' : 'SEE LOOKS'}</small>
       </button>
+
+      {isCreating && (
+        <LoadingOverlay
+          image="/assets/loading-puppy-outfit.png"
+          title="코디를 생성하고 있어요"
+          subtitle="옷장과 MCM을 조합해 화보를 만드는 중 (20~40초)"
+        />
+      )}
 
       <BottomNav active="style" />
     </main>
@@ -124,7 +139,7 @@ export function OutfitRecommendationPage() {
         )}
         {looks.map((look, index) => (
           <article className="outfit-recommendation-card" key={index} onClick={() => { stylingSession.setSelectedIndex(index); navigate('/styling/recommendation/detail') }} role="button" tabIndex="0">
-            <div className="outfit-recommendation-image"><img src={assetUrl(look.imageUrl)} alt={`LOOK ${index + 1}`} /></div>
+            <div className="outfit-recommendation-image"><FadeImg src={assetUrl(look.imageUrl)} alt={`LOOK ${index + 1}`} /></div>
             {/* concept=제목(영어 작명, 폴백이면 없음) · reason=추천 이유 본문 — 계약 §4-4 */}
             <div className="outfit-recommendation-copy"><strong>LOOK {index + 1}{look.concept ? ` · ${look.concept}` : ''}</strong><p>{look.reason}</p></div>
           </article>
@@ -158,7 +173,7 @@ export function OutfitDetailPage() {
       </header>
 
       <h1 className="outfit-detail-look-title">LOOK {index + 1}{outfit.concept ? ` · ${outfit.concept}` : ''}</h1>
-      <img className="outfit-detail-image" src={imageUrl} alt={`LOOK ${index + 1}`} />
+      <FadeImg className="outfit-detail-image" src={imageUrl} alt={`LOOK ${index + 1}`} />
 
       {reason && (
         <section className="outfit-detail-description">
