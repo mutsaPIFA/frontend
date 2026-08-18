@@ -17,11 +17,40 @@ function productCategory(product) {
   return 'CLOTHES'
 }
 
+// 찜 상태 공용 훅 (계약 §5-3~5-5) — 하트 상태는 찜 목록 id 집합으로 매칭, 토글은 낙관적 갱신
+function useWishlist() {
+  const { data, setData } = useApi(async () => {
+    const result = await apiRequest('/api/v1/wishlist')
+    return Array.isArray(result) ? result : []
+  }, [], { cacheKey: 'wishlist' })
+
+  const wishedIds = new Set((data || []).map((product) => product.id))
+
+  async function toggleWish(product) {
+    const wished = wishedIds.has(product.id)
+    setData((current) => wished
+      ? (current || []).filter((item) => item.id !== product.id)
+      : [product, ...(current || [])])
+    invalidateApiCache('profile')
+    try {
+      await apiRequest(`/api/v1/wishlist/${product.id}`, { method: wished ? 'DELETE' : 'POST' })
+    } catch {
+      // 실패 시 원상 복구
+      setData((current) => wished
+        ? [product, ...(current || [])]
+        : (current || []).filter((item) => item.id !== product.id))
+    }
+  }
+
+  return { wishlist: data || [], wishedIds, toggleWish }
+}
+
 export function ShopPage() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
+  const { wishedIds, toggleWish } = useWishlist()
 
   // 타이핑마다 API를 쏘지 않게 300ms 디바운스
   useEffect(() => {
@@ -126,6 +155,15 @@ export function ShopPage() {
           >
             <div className="product-image-wrap">
               <FadeImg src={assetUrl(product.cutoutUrl || product.imageUrl)} alt="" loading="lazy" />
+              <button
+                className="favorite-button"
+                type="button"
+                aria-label={wishedIds.has(product.id) ? '찜 해제' : '찜하기'}
+                aria-pressed={wishedIds.has(product.id)}
+                onClick={(event) => { event.stopPropagation(); toggleWish(product) }}
+              >
+                <img src={`/assets/home/${wishedIds.has(product.id) ? 'heart-filled.svg' : 'heart-outline.svg'}`} alt="" />
+              </button>
             </div>
             <div className="product-info">
               {/* 전부 MCM이라 브랜드 뱃지는 무의미 — 카테고리 뱃지로 (팀 확정) */}
@@ -146,6 +184,7 @@ export function ShopPage() {
 export function ProductDetailPage() {
   const { id = '1' } = useParams()
   const navigate = useNavigate()
+  const { wishedIds, toggleWish } = useWishlist()
   const [isAddingToCloset, setIsAddingToCloset] = useState(false)
   const [closetMessage, setClosetMessage] = useState('')
   const [imageIndex, setImageIndex] = useState(0)
@@ -199,6 +238,17 @@ export function ProductDetailPage() {
       <header className="detail-header">
         <BackButton onClick={() => navigate(-1)} />
         <div><strong>제품 상세</strong><span>DETAILS</span></div>
+        {product && (
+          <button
+            className="detail-wish-button"
+            type="button"
+            aria-label={wishedIds.has(product.id) ? '찜 해제' : '찜하기'}
+            aria-pressed={wishedIds.has(product.id)}
+            onClick={() => toggleWish(product)}
+          >
+            <img src={`/assets/home/${wishedIds.has(product.id) ? 'heart-filled.svg' : 'heart-outline.svg'}`} alt="" />
+          </button>
+        )}
       </header>
 
       {!product && (
@@ -243,17 +293,60 @@ export function ProductDetailPage() {
           href={product.productUrl || 'https://kr.mcmworldwide.com/'}
           aria-label={`${product.name} MCM 공식몰에서 바로 구매`}
         >
-          바로구매<small>BUY NOW</small>
+          구매
         </a>
       </div>
 
       <button className="closet-add-detail-button" type="button" onClick={handleAddToCloset} disabled={isAddingToCloset}>
-        <span>{isAddingToCloset ? '추가 중...' : '옷장에 편입하기'}</span>
+        <span>{isAddingToCloset ? '저장 중...' : '옷장에 저장하기'}</span>
       </button>
       {closetMessage && <p className="closet-add-detail-message" role="status">{closetMessage}</p>}
       </>)}
 
       <BottomNav active="shop" />
+    </main>
+  )
+}
+
+export function WishlistPage() {
+  const navigate = useNavigate()
+  const { wishlist, toggleWish } = useWishlist()
+
+  return (
+    <main className="recommendations-screen">
+      <header className="recommendations-header">
+        <BackButton onClick={() => navigate(-1)} />
+        <div><strong>찜한 상품</strong><span>MY PICKS</span></div>
+      </header>
+
+      <section className="recommendation-list wishlist-list" aria-label="찜한 상품">
+        {wishlist.length === 0 && (
+          <div className="grid-status">
+            <p>아직 찜한 상품이 없어요.<br />샵에서 마음에 드는 MCM에 하트를 눌러보세요.</p>
+            <button className="retry-button" type="button" onClick={() => navigate('/')}>샵 구경가기</button>
+          </div>
+        )}
+        {wishlist.map((product) => (
+          <Link className="recommendation-row" key={product.id} to={`/products/${product.id}`}>
+            <div className="recommendation-thumb"><FadeImg src={assetUrl(product.cutoutUrl || product.imageUrl)} alt="" /></div>
+            <div className="recommendation-details">
+              <p>{product.name}</p>
+              <small>{productCategory(product)}</small>
+              <strong>{formatPrice(product.price)}</strong>
+            </div>
+            <button
+              className="wishlist-remove"
+              type="button"
+              aria-label="찜 해제"
+              onClick={(event) => { event.preventDefault(); event.stopPropagation(); toggleWish(product) }}
+            >
+              <img src="/assets/home/heart-filled.svg" alt="" />
+            </button>
+          </Link>
+        ))}
+      </section>
+
+      <BottomNav active="profile" />
     </main>
   )
 }

@@ -1239,6 +1239,73 @@ main { animation: screen-fade 0.2s ease-out; }
 @keyframes stamp-pop { 0% { opacity: 0; transform: scale(0.6); } 60% { transform: scale(1.08); } 100% { opacity: 1; transform: scale(1); } }
 .recognize-status { animation: stamp-pop 0.45s ease-out both; }
 
+/* ===== 프로필·수정·찜 라운드 ===== */
+
+/* 아바타 업로드 (탭=파일 선택) + 닉네임 편집 */
+.profile-avatar { position: relative; cursor: pointer; }
+.profile-avatar input { display: none; }
+.profile-avatar img { border-radius: 50%; object-fit: cover; }
+.profile-avatar-edit { position: absolute; right: 2px; bottom: 2px; display: grid; width: 26px; height: 26px; place-items: center; border-radius: 50%; background: #8b6b47; color: #fff; font-size: 12px; }
+.profile-name-edit { margin-left: 7px; padding: 0; border: 0; background: transparent; color: #9e7143; cursor: pointer; font-size: 14px; }
+.profile-name-form { display: flex; justify-content: center; gap: 6px; }
+.profile-name-form input { width: 150px; height: 36px; padding: 0 12px; border: 1px solid #e2dccd; border-radius: 12px; font: inherit; }
+.profile-name-form button { padding: 0 12px; border: 0; border-radius: 12px; background: #8b6b47; color: #fff; cursor: pointer; font: inherit; font-size: 13px; }
+.profile-name-form button:last-child { background: #b7ab90; }
+
+/* 프로필 DNA 카드 — DNA 화면과 같은 문법 */
+.profile-dna-card { margin: 16px 20px 0; padding: 18px 16px 16px; border-radius: 18px; background: #fff; text-align: center; }
+.profile-dna-card .profile-card-label { margin-bottom: 12px; color: #9a8d74; font-size: 10px; letter-spacing: 0.14em; }
+.profile-dna-card p { margin: 10px 0 0; color: #5d4a33; font-size: 13px; line-height: 21px; }
+
+/* 통계 카드 — 코디(와이드) + 옷장·찜 반반 */
+.profile-stat-card { text-align: left; }
+
+/* 기록 상세 — 소감·날짜 수정 / 삭제 */
+.style-log-detail-note { position: relative; }
+.look-edit-button { position: absolute; top: 10px; right: 12px; padding: 4px; border: 0; background: transparent; color: #9e7143; cursor: pointer; font-size: 15px; }
+.look-edit-form { display: flex; width: 100%; flex-direction: column; gap: 8px; margin-top: 10px; }
+.look-edit-form input[type='date'] { height: 38px; padding: 0 12px; border: 1px solid #e2dccd; border-radius: 12px; background: #fff; font: inherit; font-size: 13px; }
+.look-edit-form textarea { height: 110px; padding: 12px; resize: none; border: 0; border-radius: 12px; outline: 0; background: #fff; color: #724c25; font: inherit; font-size: 13px; line-height: 21px; }
+.look-edit-actions { display: flex; gap: 8px; }
+.look-edit-actions button { flex: 1; height: 40px; border: 0; border-radius: 12px; background: #b7ab90; color: #fff; cursor: pointer; font: inherit; font-size: 14px; }
+.look-edit-actions button:last-child { background: #8b6b47; }
+.look-edit-error { margin: 8px 0 0; color: #b04636; font-size: 12px; }
+.look-delete-button { display: block; margin: 14px auto 0; padding: 6px 14px; border: 0; background: transparent; color: #b04636; cursor: pointer; font: inherit; font-size: 13px; text-decoration: underline; }
+
+/* 캘린더 월 이동 + 같은 날 여러 룩 */
+.calendar-month-nav { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 6px 0 4px; }
+.calendar-month-nav strong { min-width: 90px; color: #724c25; font-size: 16px; text-align: center; }
+.calendar-month-nav button { display: grid; width: 34px; height: 34px; place-items: center; padding: 0; border: 0; border-radius: 50%; background: #fff; color: #724c25; cursor: pointer; font-size: 18px; }
+.calendar-grid button { position: relative; }
+.calendar-day-count { position: absolute; top: -4px; right: -6px; display: grid; min-width: 16px; height: 16px; place-items: center; border-radius: 8px; background: #8b6b47; color: #fff; font-size: 9px; font-style: normal; }
+.day-sheet-layer { position: fixed; z-index: 45; inset: 0; display: flex; align-items: flex-end; justify-content: center; background: rgba(32, 27, 16, 0.45); }
+.day-sheet { width: min(100%, 393px); padding: 20px 20px 26px; border-radius: 22px 22px 0 0; background: #fdf9f2; animation: rise-in 0.3s ease-out; }
+.day-sheet > strong { display: block; margin-bottom: 12px; font-size: 16px; }
+.day-sheet-list { display: flex; gap: 12px; overflow-x: auto; }
+.day-sheet-list button { display: flex; width: 110px; flex: 0 0 110px; flex-direction: column; gap: 6px; padding: 0; border: 0; background: transparent; cursor: pointer; font: inherit; }
+.day-sheet-list img { width: 110px; height: 130px; border-radius: 12px; object-fit: cover; }
+.day-sheet-list span { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+
+/* 상세 헤더 하트 + 찜 목록 */
+.detail-wish-button { position: absolute; top: 24px; right: 12px; display: grid; width: 44px; height: 44px; place-items: center; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.detail-wish-button img { width: 22px; height: 22px; }
+.wishlist-list .recommendation-row { position: relative; }
+.wishlist-remove { position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.wishlist-remove img { width: 100%; height: 100%; }
+
+/* 아이템 정보 모달 — 수정 모드 */
+.item-modal-actions { display: flex; gap: 8px; }
+.item-modal-actions .item-modal-close { flex: 1; }
+.item-modal-edit { flex: 1; height: 42px; border: 1px solid #e2dccd; border-radius: 14px; background: #fff; color: #724c25; cursor: pointer; font: inherit; }
+.item-modal-name { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; text-align: left; }
+.item-modal-name span { padding-left: 4px; color: #7a715f; font-size: 11px; }
+.item-modal-name input { height: 40px; padding: 0 12px; border: 1px solid #e2dccd; border-radius: 12px; font: inherit; font-size: 14px; }
+.item-modal-selects { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; margin-bottom: 12px; }
+.item-modal-selects label { display: flex; flex-direction: column; gap: 4px; text-align: left; }
+.item-modal-selects span { padding-left: 4px; color: #7a715f; font-size: 11px; }
+.item-modal-selects select { height: 38px; padding: 0 10px; border: 1px solid #e2dccd; border-radius: 12px; background: #fff; color: #3a3427; font: inherit; font-size: 13px; }
+.item-modal-error { margin: 0 0 10px; color: #b04636; font-size: 12px; }
+
 /* 기록 저장 셀레브레이션 — 저장의 순간을 잠깐 축하하고 상세로 */
 .save-celebration {
   position: fixed;
