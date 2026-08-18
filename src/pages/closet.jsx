@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiRequest, assetUrl } from '../api/client.js'
+import BackButton from '../components/BackButton.jsx'
 import BottomNav from '../components/BottomNav.jsx'
 import FadeImg from '../components/FadeImg.jsx'
 import ItemInfoModal from '../components/ItemInfoModal.jsx'
@@ -70,7 +71,7 @@ export function ClosetPage() {
   return (
     <main className="closet-screen" data-node-id="53:280">
       <header className="closet-header">
-        <button className="back-button" type="button" aria-label="뒤로 가기" onClick={() => window.history.back()} />
+        <BackButton onClick={() => window.history.back()} />
         <div className="closet-heading"><strong>내 옷장</strong><span>MY CLOSET</span></div>
         {isSelecting && (
           <button
@@ -137,18 +138,15 @@ export function ClosetPage() {
       <div className="closet-actions">
         {!isSelecting ? (
           <button className="add-item-button dna-build-button" type="button" onClick={toggleSelecting}>
-            <span>스타일 DNA 만들기</span>
-            <small>BUILD MY DNA</small>
+            <span>스타일 추천 받기</span>
           </button>
         ) : (
           <>
             <button className="add-item-button closet-cancel-button" type="button" onClick={toggleSelecting}>
-              <span>선택 취소</span>
-              <small>CANCEL</small>
+              <span>취소</span>
             </button>
             <button className="add-item-button dna-build-button" type="button" onClick={buildDna} disabled={selectedIds.length === 0}>
-              <span>DNA 생성하기 {selectedIds.length > 0 ? `(${selectedIds.length})` : ''}</span>
-              <small>BUILD MY DNA</small>
+              <span>생성 {selectedIds.length > 0 ? `(${selectedIds.length})` : ''}</span>
             </button>
           </>
         )}
@@ -220,7 +218,7 @@ export function ScanPage() {
   return (
     <main className="scan-screen" data-node-id="190:120">
       <header className="scan-header">
-        <button className="back-button" type="button" aria-label="뒤로 가기" onClick={() => navigate('/closet')} />
+        <BackButton onClick={() => navigate('/closet')} />
         <div className="scan-heading"><strong>아이템 추가하기</strong><span>ADD ITEM</span></div>
       </header>
 
@@ -232,14 +230,16 @@ export function ScanPage() {
 
       {error && <p className="scan-error" role="alert">{error}</p>}
 
+      {/* 촬영(셔터) 가운데, 갤러리 오른쪽 — capture=environment라 모바일에선 카메라 앱이 바로 뜬다 */}
       <div className="scan-actions">
-        <label className="album-button" aria-label="앨범에서 추가">
-          <img src="/assets/scan/album-button.svg" alt="앨범에서 추가" />
-          <input type="file" accept="image/*" onChange={handleFileChange} />
-        </label>
+        <span className="scan-actions-spacer" aria-hidden="true" />
         <label className="camera-button" aria-label="카메라로 촬영">
           <img src="/assets/scan/camera-button.svg" alt="카메라로 촬영" />
           <input type="file" accept="image/*" capture="environment" onChange={handleFileChange} />
+        </label>
+        <label className="album-button" aria-label="앨범에서 선택">
+          <img src="/assets/scan/album-button.svg" alt="앨범에서 선택" />
+          <input type="file" accept="image/*" onChange={handleFileChange} />
         </label>
       </div>
 
@@ -250,8 +250,14 @@ export function ScanPage() {
       {isUploading && (
         <LoadingOverlay
           image="/assets/loading-puppy.png"
-          title="아이템을 살펴보고 있어요"
-          subtitle="배경을 지우고 종류·색·소재를 알아내는 중 (10~40초)"
+          expectedSeconds={20}
+          slides={previewUrl ? [previewUrl] : []}
+          messages={[
+            { title: '아이템을 살펴보고 있어요', subtitle: '사진 속 옷을 찾는 중이에요' },
+            { title: '배경을 지우고 있어요', subtitle: '옷만 깔끔하게 오려내는 중' },
+            { title: '종류와 색을 알아보고 있어요', subtitle: '어떤 아이템인지 읽는 중이에요' },
+            { title: '소재와 무드까지 읽는 중', subtitle: '태그는 나중에 직접 고칠 수 있어요' },
+          ]}
         />
       )}
 
@@ -283,9 +289,8 @@ export function RecognizeResultPage() {
   return (
     <main className="recognize-screen" data-node-id="210:852">
       <header className="recognize-header">
-        <button className="back-button" type="button" aria-label="뒤로 가기" onClick={() => navigate('/closet/scan')} />
+        <BackButton onClick={() => navigate('/closet/scan')} />
         <div><strong>아이템 인식</strong><span>RECOGNIZE ITEM</span></div>
-        <img src="/assets/recognize/header-mark.svg" alt="" />
       </header>
 
       <div className="recognize-status"><img src="/assets/recognize/check.svg" alt="" /><span>아이템 인식 완료</span></div>
@@ -295,6 +300,7 @@ export function RecognizeResultPage() {
         <div className="recognize-item-name">{itemName}</div>
       </section>
 
+      <p className="recognize-tags-hint">태그가 다르면 탭해서 바꿀 수 있어요</p>
       <section className="recognize-tags" aria-label="인식된 태그 확인·수정">
         {[['category', '종류'], ['color', '색상'], ['material', '소재'], ['mood', '무드']].map(([key, label]) => (
           <label key={key}>
@@ -308,8 +314,8 @@ export function RecognizeResultPage() {
       </section>
 
       <div className="recognize-actions">
-        <button type="button" onClick={() => navigate('/closet/scan')}><strong>다시 스캔하기</strong><span>SCAN AGAIN</span></button>
-        <button type="button" onClick={() => navigate('/closet/scan/recognize/complete')}><strong>옷장에 넣기</strong><span>PUT IN MY CLOSET</span></button>
+        <button type="button" onClick={() => navigate('/closet/scan')}><strong>다시 스캔하기</strong></button>
+        <button type="button" onClick={() => navigate('/closet/scan/recognize/complete')}><strong>옷장에 넣기</strong></button>
       </div>
 
       <BottomNav active="closet" />
@@ -364,7 +370,6 @@ export function ClosetAddCompletePage() {
 
       <button className="closet-add-complete-button" type="button" onClick={() => navigate('/closet')}>
         <span>옷장으로 가기</span>
-        <small>GO TO MY CLOSET</small>
       </button>
 
       <BottomNav active="closet" />
@@ -373,7 +378,20 @@ export function ClosetAddCompletePage() {
 }
 
 export function StyleDnaPage() {
+  const navigate = useNavigate()
   const recommendationCarouselRef = useRef(null)
+
+  // 분석 대기 연출용 재료 — 선택한(없으면 전체) 옷 누끼
+  const { data: closetForSlides } = useApi(async () => {
+    const result = await apiRequest('/api/v1/closet-items')
+    return Array.isArray(result) ? result : []
+  }, [], { cacheKey: 'closet:all' })
+  const slideIds = stylingSession.dnaItemIds()
+  const dnaSlides = (closetForSlides || [])
+    .filter((item) => slideIds.length === 0 || slideIds.includes(item.id))
+    .map((item) => assetUrl(item.cutoutUrl || item.imageUrl))
+    .filter(Boolean)
+    .slice(0, 10)
 
   const dnaIds = stylingSession.dnaItemIds()
   const { data, isLoading, error, reload } = useApi(async () => {
@@ -407,16 +425,22 @@ export function StyleDnaPage() {
   return (
     <main className="style-dna-screen" data-node-id="53:125">
       <header className="style-dna-header">
-        <button className="back-button" type="button" aria-label="뒤로 가기" onClick={() => window.history.back()} />
+        <BackButton onClick={() => window.history.back()} />
         <div><strong>당신의 스타일 DNA</strong><span>YOUR STYLE DNA</span></div>
       </header>
 
       {isLoading && (
-        <section className="style-dna-loading" aria-live="polite">
-          <img src="/assets/loading-puppy-styling.png" alt="" />
-          <strong>스타일 DNA를 분석하고 있어요</strong>
-          <span>잠시만 기다려주세요</span>
-        </section>
+        <LoadingOverlay
+          image="/assets/loading-puppy-styling.png"
+          expectedSeconds={14}
+          slides={dnaSlides}
+          messages={[
+            { title: '옷장을 살펴보고 있어요', subtitle: '어떤 취향인지 알아보는 중이에요' },
+            { title: '컬러와 무드를 분석하고 있어요', subtitle: '자주 입는 색을 모아보는 중' },
+            { title: '스타일 키워드를 뽑고 있어요', subtitle: '당신만의 DNA로 정리하는 중이에요' },
+            { title: '어울리는 MCM도 고르고 있어요', subtitle: '채우면 좋은 아이템을 찾는 중' },
+          ]}
+        />
       )}
 
       {!isLoading && error && (
@@ -432,11 +456,16 @@ export function StyleDnaPage() {
           <section className="style-dna-section">
             <h1>당신의 스타일 DNA</h1>
             <div className="dna-summary-card">
-              <strong>[{dna?.keywords?.join(' · ') || '-'}]</strong>
+              {/* 키워드 칩이 톡톡, 컬러 스와치가 차례로 채워진다 */}
+              <div className="dna-keywords">
+                {(dna?.keywords || []).map((keyword, i) => (
+                  <em key={keyword} style={{ animationDelay: `${i * 0.12}s` }}>{keyword}</em>
+                ))}
+              </div>
               {(dna?.dominantColors || []).length > 0 && (
                 <div className="dna-colors" aria-label={`주요 컬러: ${dna.dominantColors.join(', ')}`}>
-                  {dna.dominantColors.map((color) => (
-                    <i key={color} title={color} style={{ background: tagColorHex[color] || tagColorHex.기타 }} />
+                  {dna.dominantColors.map((color, i) => (
+                    <i key={color} title={color} style={{ background: tagColorHex[color] || tagColorHex.기타, animationDelay: `${0.35 + i * 0.12}s` }} />
                   ))}
                 </div>
               )}
@@ -446,20 +475,32 @@ export function StyleDnaPage() {
 
           <section className="style-dna-section recommendation-section">
             <div className="recommendation-heading-row">
-              <h2>채우면 좋은 한가지</h2>
+              <h2>채우면 좋은 아이템</h2>
               <span className="recommendation-count">{recommendationPicks.length} PICKS</span>
             </div>
             <div className="recommendation-carousel-wrap">
               <button className="recommendation-arrow recommendation-arrow-prev" type="button" aria-label="이전 추천 제품" onClick={() => moveRecommendations(-1)}>‹</button>
               <div className="recommendation-carousel" ref={recommendationCarouselRef} aria-label="추천 상품 5가지">
                 {recommendationPicks.map((pick, index) => (
-                  <article className="recommendation-card" key={pick.product.id}>
+                  <article
+                    className="recommendation-card recommendation-card-clickable"
+                    key={pick.product.id}
+                    role="link"
+                    tabIndex={0}
+                    onClick={() => navigate(`/products/${pick.product.id}`)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        navigate(`/products/${pick.product.id}`)
+                      }
+                    }}
+                  >
                     <span className="perfect-match">{index === 0 ? 'PERFECT MATCH' : `MATCH ${index + 1}`}</span>
                     <FadeImg className="recommendation-image" src={assetUrl(pick.product.imageUrl)} alt={pick.product.name} />
                     <p>{pick.product.name}</p>
                     <div className="recommendation-reason">
                       <div className="recommendation-reason-copy">
-                        <strong>추천 근거</strong>
+                        <strong>스타일리스트 코멘트</strong>
                         <span>{pick.reason || '현재 옷장 아이템과 자연스럽게 어울리는 상품이에요.'}</span>
                       </div>
                       <div className="recommendation-mascot">

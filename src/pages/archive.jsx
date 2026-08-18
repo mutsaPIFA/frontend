@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiRequest, assetUrl } from '../api/client.js'
+import BackButton from '../components/BackButton.jsx'
 import BottomNav from '../components/BottomNav.jsx'
 import FadeImg from '../components/FadeImg.jsx'
 import ItemInfoModal from '../components/ItemInfoModal.jsx'
+import ReasonText from '../components/ReasonText.jsx'
 import { invalidateApiCache, useApi } from '../hooks/useApi.js'
 import { formatWornDate, scanItemName } from '../lib/format.js'
 import { stylingSession } from '../lib/stylingSession.js'
@@ -12,13 +14,20 @@ export function StyleLogPage() {
   const navigate = useNavigate()
   const [note, setNote] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const [isCelebrating, setIsCelebrating] = useState(false)
   const [message, setMessage] = useState('')
   const [wornDate] = useState(() => stylingSession.logDate() || new Date().toISOString().slice(0, 10))
+  const outfitIndex = stylingSession.selectedIndex()
   const outfit = stylingSession.selectedOutfit()
+  const isRecorded = Boolean(stylingSession.recordedLooks()[outfitIndex])
 
   async function handleSave() {
     if (!outfit.moodId) {
       setMessage('먼저 추천 코디를 선택해 주세요.')
+      return
+    }
+    if (isRecorded) {
+      setMessage('이미 기록한 코디예요. 후보 화면에서 기록을 취소하면 다시 저장할 수 있어요.')
       return
     }
     setIsSaving(true)
@@ -39,11 +48,13 @@ export function StyleLogPage() {
         }),
       })
       stylingSession.setSavedLook(savedLook)
+      if (savedLook?.id != null) stylingSession.setRecordedLook(outfitIndex, savedLook.id)
       stylingSession.clearLogDate()
       invalidateApiCache('looks:')
       invalidateApiCache('profile')
-      // 작성 화면을 히스토리에서 대체 — 상세에서 뒤로가면 코디 상세로 자연스럽게 돌아간다
-      navigate('/archive/detail', { replace: true })
+      // 저장의 순간을 잠깐 축하 — 그 뒤 상세로 (작성 화면은 히스토리에서 대체)
+      setIsCelebrating(true)
+      setTimeout(() => navigate('/archive/detail', { replace: true }), 1100)
     } catch (saveError) {
       setMessage(saveError.message)
     } finally {
@@ -54,7 +65,7 @@ export function StyleLogPage() {
   return (
     <main className="style-log-screen" data-node-id="53:349">
       <header className="style-log-header">
-        <button type="button" aria-label="뒤로 가기" onClick={() => navigate('/styling/recommendation/detail')}><img src="/assets/style-log/mark.svg" alt="" /></button>
+        <BackButton onClick={() => navigate('/styling/recommendation/detail')} />
         <div><strong>코디 기록</strong><span>MY STYLE LOG</span></div>
       </header>
 
@@ -73,7 +84,17 @@ export function StyleLogPage() {
       </section>
 
       {message && <p className="style-log-message" role="status">{message}</p>}
-      <button className="style-log-submit" type="button" onClick={handleSave} disabled={isSaving}><span>{isSaving ? '저장 중' : '업로드하기'}</span><small>{isSaving ? 'SAVING' : 'UPLOAD'}</small></button>
+      <button className="style-log-submit" type="button" onClick={handleSave} disabled={isSaving || isCelebrating || isRecorded}>
+        <span>{isRecorded ? '이미 기록한 코디예요' : isSaving ? '저장 중...' : '기록하기'}</span>
+      </button>
+
+      {isCelebrating && (
+        <div className="save-celebration" role="status">
+          <span className="save-celebration-check">✓</span>
+          <img src="/assets/loading-puppy-complete.png" alt="" />
+          <strong>기록 완료!</strong>
+        </div>
+      )}
 
       <BottomNav active="style" />
     </main>
@@ -124,13 +145,15 @@ export function StyleLogDetailPage() {
   return (
     <main className="style-log-detail-screen" data-node-id="257:558">
       <header className="style-log-detail-header">
-        <button type="button" aria-label="뒤로 가기" onClick={() => navigate(-1)}><img src="/assets/style-log-detail/mark.svg" alt="" /></button>
+        <BackButton onClick={() => navigate(-1)} />
         <div><strong>코디 기록</strong><span>MY STYLE LOG</span></div>
       </header>
       <FadeImg className="style-log-detail-image" src={imageUrl} alt="저장한 코디" />
       <section className="style-log-detail-note">
         <strong>{formatWornDate(look?.wornDate)}{concept ? ` · ${concept}` : ''}</strong>
-        {bodyText && <p>{bodyText}</p>}
+        {look?.note
+          ? <p>{look.note}</p>
+          : bodyText && <ReasonText text={bodyText} extraKeywords={[product?.name]} />}
       </section>
       <section className="style-log-detail-items">
         <div className="used-item-thumbs">
@@ -168,7 +191,6 @@ export function StyleCalendarPage() {
   }, [monthKey], { cacheKey: `looks:${monthKey}` })
   const looks = data || []
 
-  const markedDates = looks.map((look) => Number(String(look.wornDate).slice(-2)))
   const firstDay = new Date(year, month, 1)
   const mondayOffset = (firstDay.getDay() + 6) % 7
   const daysInMonth = new Date(year, month + 1, 0).getDate()
@@ -177,25 +199,34 @@ export function StyleCalendarPage() {
   return (
     <main className="style-calendar-screen" data-node-id="257:209">
       <header className="style-calendar-header">
-        <button type="button" aria-label="뒤로 가기" onClick={() => navigate(-1)}><img src="/assets/style-calendar/mark.svg" alt="" /></button>
+        <BackButton onClick={() => navigate(-1)} />
         <div><strong>코디 캘린더</strong><span>STYLE CALENDAR</span></div>
       </header>
       <div className="style-calendar-message"><img src="/assets/style-calendar/calendar-puppy.png" alt="" /><span>그동안의 코디를 확인해볼까요 ?</span></div>
       <section className="calendar-card" aria-label={`${year}년 ${month + 1}월 코디 캘린더`}>
         <div className="calendar-weekdays">{['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => <span key={day}>{day}</span>)}</div>
         <div className="calendar-grid">
-          {cells.map((day, index) => (
-            <button key={`${index}-${day || 'empty'}`} className={day && markedDates.includes(day) ? 'marked' : ''} type="button" disabled={!day} onClick={() => {
-              const look = looks.find((item) => Number(String(item.wornDate).slice(-2)) === day)
-              if (look?.id) {
-                stylingSession.setSavedLook(look)
-                navigate('/archive/detail')
-              } else if (day) {
-                stylingSession.setLogDate(`${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`)
-                navigate('/archive')
-              }
-            }}>{day || ''}</button>
-          ))}
+          {cells.map((day, index) => {
+            const dayLook = day ? looks.find((item) => Number(String(item.wornDate).slice(-2)) === day) : null
+            return (
+              <button
+                key={`${index}-${day || 'empty'}`}
+                className={dayLook ? 'marked' : ''}
+                type="button"
+                disabled={!day}
+                style={dayLook?.generatedImageUrl ? { backgroundImage: `url(${assetUrl(dayLook.generatedImageUrl)})` } : undefined}
+                onClick={() => {
+                  if (dayLook?.id) {
+                    stylingSession.setSavedLook(dayLook)
+                    navigate('/archive/detail')
+                  } else if (day) {
+                    stylingSession.setLogDate(`${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`)
+                    navigate('/archive')
+                  }
+                }}
+              >{day || ''}</button>
+            )
+          })}
         </div>
       </section>
       <BottomNav active="style" />

@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiRequest, assetUrl } from '../api/client.js'
+import BackButton from '../components/BackButton.jsx'
 import BottomNav from '../components/BottomNav.jsx'
 import FadeImg from '../components/FadeImg.jsx'
 import ItemInfoModal from '../components/ItemInfoModal.jsx'
 import LoadingOverlay from '../components/LoadingOverlay.jsx'
-import { useApi } from '../hooks/useApi.js'
+import ReasonText from '../components/ReasonText.jsx'
+import { invalidateApiCache, useApi } from '../hooks/useApi.js'
 import { scanItemName } from '../lib/format.js'
-import { moodIcon } from '../lib/vocab.js'
 import { stylingSession } from '../lib/stylingSession.js'
 
 export function MoodSelectionPage() {
@@ -21,6 +22,16 @@ export function MoodSelectionPage() {
     return Array.isArray(result) ? result : []
   }, [], { cacheKey: 'moods' })
   const moods = data || []
+
+  // 생성 대기 연출용 재료 — 옷장 누끼가 나타났다 사라지며 "조합 중"을 보여준다
+  const { data: closetData } = useApi(async () => {
+    const result = await apiRequest('/api/v1/closet-items')
+    return Array.isArray(result) ? result : []
+  }, [], { cacheKey: 'closet:all' })
+  const outfitSlides = (closetData || [])
+    .map((item) => assetUrl(item.cutoutUrl || item.imageUrl))
+    .filter(Boolean)
+    .slice(0, 10)
 
   async function handleSeeLooks() {
     if (!selectedMoodId) {
@@ -48,9 +59,7 @@ export function MoodSelectionPage() {
   return (
     <main className="mood-selection-screen" data-node-id="53:547">
       <header className="mood-selection-header">
-        <button className="mood-back-button" type="button" aria-label="뒤로 가기" onClick={() => navigate(-1)}>
-          <img src="/assets/mood/back.svg" alt="" />
-        </button>
+        <BackButton onClick={() => navigate(-1)} />
         <div><strong>오늘은 어떤 하루예요 ?</strong><span>WHAT’S THE VIBE ?</span></div>
         <span />
       </header>
@@ -70,14 +79,16 @@ export function MoodSelectionPage() {
         {moods.map((mood) => (
           <button
             key={mood.id}
-            className={`mood-card ${selectedMoodId === mood.id ? 'selected' : ''}`}
+            className={`mood-card mood-card-photo ${selectedMoodId === mood.id ? 'selected' : ''}`}
             type="button"
             aria-pressed={selectedMoodId === mood.id}
             onClick={() => setSelectedMoodId((current) => current === mood.id ? null : mood.id)}
           >
-            <span className="mood-icon"><img src={moodIcon(mood.iconKey)} alt="" /></span>
-            <strong>{mood.label}</strong>
-            <small>{mood.labelEn}</small>
+            <FadeImg className="mood-photo" src={`/assets/mood/mood-photo-${mood.iconKey}.jpg`} alt="" />
+            <span className="mood-card-label">
+              <strong>{mood.label}</strong>
+              <small>{mood.labelEn}</small>
+            </span>
           </button>
         ))}
       </section>
@@ -85,14 +96,20 @@ export function MoodSelectionPage() {
       {error && <p className="mood-selection-error" role="alert">{error}</p>}
       <button className="mood-see-looks-button" type="button" onClick={handleSeeLooks} disabled={isCreating}>
         <span>{isCreating ? '코디를 만들고 있어요' : '추천 코디 보기'}</span>
-        <small>{isCreating ? 'CREATING LOOKS' : 'SEE LOOKS'}</small>
       </button>
 
       {isCreating && (
         <LoadingOverlay
           image="/assets/loading-puppy-outfit.png"
-          title="코디를 생성하고 있어요"
-          subtitle="옷장과 MCM을 조합해 화보를 만드는 중 (20~40초)"
+          expectedSeconds={35}
+          slides={outfitSlides}
+          messages={[
+            { title: '옷장을 열어보고 있어요', subtitle: '오늘 입을 옷들을 꺼내는 중이에요' },
+            { title: '어울리는 조합을 고르고 있어요', subtitle: '무드에 맞춰 밸런스를 잡는 중' },
+            { title: 'MCM 포인트를 얹고 있어요', subtitle: '포인트 아이템 하나가 룩을 완성해요' },
+            { title: '화보를 촬영하고 있어요', subtitle: '조명까지 세팅해서 예쁘게 담는 중' },
+            { title: '컨셉 이름을 짓고 있어요', subtitle: '이 룩에 어울리는 이름으로요' },
+          ]}
         />
       )}
 
@@ -106,11 +123,28 @@ export function OutfitRecommendationPage() {
   // 계약 §4-4: 후보는 1~3개 가변(화보 실패분은 서버가 제외) — 온 만큼만 렌더
   const looks = stylingSession.outfits()
   const selectedMood = stylingSession.selectedMood()
+  const [recorded, setRecorded] = useState(() => stylingSession.recordedLooks())
+
+  // 기록 취소(계약 §4-8) — x 탭: 저장된 룩 삭제 후 다시 기록 가능 상태로
+  async function cancelRecord(event, index) {
+    event.stopPropagation()
+    const lookId = recorded[index]
+    if (!lookId) return
+    try {
+      await apiRequest(`/api/v1/looks/${lookId}`, { method: 'DELETE' })
+      stylingSession.removeRecordedLook(index)
+      setRecorded(stylingSession.recordedLooks())
+      invalidateApiCache('looks:')
+      invalidateApiCache('profile')
+    } catch {
+      // 삭제 실패 시 상태 유지 — 재시도 가능
+    }
+  }
 
   return (
     <main className="outfit-recommendation-screen" data-node-id="53:606">
       <header className="outfit-recommendation-header">
-        <button type="button" aria-label="뒤로 가기" onClick={() => navigate('/styling')}><img src="/assets/outfit-recommendation/mark.svg" alt="" /></button>
+        <BackButton onClick={() => navigate('/styling')} />
         <div><strong>AI 스타일리스트</strong><span>AI STYLIST</span></div>
       </header>
 
@@ -127,18 +161,19 @@ export function OutfitRecommendationPage() {
           </div>
         )}
         {looks.map((look, index) => (
-          <article className="outfit-recommendation-card" key={index} onClick={() => { stylingSession.setSelectedIndex(index); navigate('/styling/recommendation/detail') }} role="button" tabIndex="0">
+          <article className={`outfit-recommendation-card ${recorded[index] ? 'recorded' : ''}`} key={index} onClick={() => { stylingSession.setSelectedIndex(index); navigate('/styling/recommendation/detail') }} role="button" tabIndex="0">
             <div className="outfit-recommendation-image"><FadeImg src={assetUrl(look.imageUrl)} alt={`LOOK ${index + 1}`} /></div>
+            {recorded[index] && (
+              <>
+                <span className="look-recorded-badge">기록됨</span>
+                <button className="look-cancel-button" type="button" aria-label="기록 취소" onClick={(event) => cancelRecord(event, index)}>✕</button>
+              </>
+            )}
             {/* concept=제목(영어 작명, 폴백이면 없음) · reason=추천 이유 본문 — 계약 §4-4 */}
             <div className="outfit-recommendation-copy"><strong>LOOK {index + 1}{look.concept ? ` · ${look.concept}` : ''}</strong><p>{look.reason}</p></div>
           </article>
         ))}
       </section>
-
-      <button className="outfit-log-button" type="button" onClick={() => navigate('/archive')}>
-        <span>코디 기록하기</span>
-        <small>UPLOAD MY STYLE LOG</small>
-      </button>
 
       <BottomNav active="style" />
     </main>
@@ -150,6 +185,7 @@ export function OutfitDetailPage() {
   const [viewItem, setViewItem] = useState(null)
   const index = stylingSession.selectedIndex()
   const outfit = stylingSession.selectedOutfit()
+  const isRecorded = Boolean(stylingSession.recordedLooks()[index])
   const closetItems = outfit.closetItems || []
   const imageUrl = assetUrl(outfit.imageUrl)
   // concept=제목 · reason=본문 — 서로 대체 관계가 아니다 (계약 §4-4)
@@ -158,7 +194,7 @@ export function OutfitDetailPage() {
   return (
     <main className="outfit-detail-screen" data-node-id="268:168">
       <header className="outfit-detail-header">
-        <button type="button" aria-label="뒤로 가기" onClick={() => navigate('/styling/recommendation')}><img src="/assets/outfit-detail/mark.svg" alt="" /></button>
+        <BackButton onClick={() => navigate('/styling/recommendation')} />
         <div><strong>추천 코디</strong><span>LOOKS</span></div>
       </header>
 
@@ -167,7 +203,7 @@ export function OutfitDetailPage() {
 
       {reason && (
         <section className="outfit-detail-description">
-          <p>{reason}</p>
+          <ReasonText text={reason} extraKeywords={[outfit.mcmProduct?.name]} />
         </section>
       )}
 
@@ -192,7 +228,9 @@ export function OutfitDetailPage() {
       </section>
 
       <div className="outfit-detail-actions">
-        <button className="outfit-detail-upload" type="button" onClick={() => navigate('/archive')}><span>이 코디 기록하기</span><small>UPLOAD THIS STYLE LOG</small></button>
+        <button className="outfit-detail-upload" type="button" onClick={() => navigate('/archive')} disabled={isRecorded}>
+          <span>{isRecorded ? '이미 기록한 코디예요' : '이 코디 기록하기'}</span>
+        </button>
       </div>
 
       <ItemInfoModal item={viewItem} onClose={() => setViewItem(null)} />

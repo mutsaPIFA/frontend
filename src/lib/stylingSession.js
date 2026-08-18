@@ -11,12 +11,26 @@ const read = (key, fallback) => {
 const write = (key, value) => sessionStorage.setItem(key, JSON.stringify(value))
 
 export const stylingSession = {
-  // 코디 후보 (계약 §4-4 응답 그대로)
+  // 코디 후보 (계약 §4-4 응답 그대로) — 새 후보 세트가 오면 기록 상태도 초기화
   outfits: () => {
     const value = read('mcm_outfits', '[]')
     return Array.isArray(value) ? value : []
   },
-  setOutfits: (outfits) => write('mcm_outfits', outfits),
+  setOutfits: (outfits) => {
+    write('mcm_outfits', outfits)
+    sessionStorage.removeItem('mcm_recorded_looks')
+  },
+
+  // 후보 index → 저장된 look id. 기록된 후보는 재기록 방지 + x로 취소(계약 §4-8)
+  recordedLooks: () => read('mcm_recorded_looks', '{}') || {},
+  setRecordedLook(index, lookId) {
+    write('mcm_recorded_looks', { ...this.recordedLooks(), [index]: lookId })
+  },
+  removeRecordedLook(index) {
+    const map = this.recordedLooks()
+    delete map[index]
+    write('mcm_recorded_looks', map)
+  },
 
   selectedIndex: () => Number(sessionStorage.getItem('mcm_selected_outfit_index') || 0),
   setSelectedIndex: (index) => sessionStorage.setItem('mcm_selected_outfit_index', String(index)),
