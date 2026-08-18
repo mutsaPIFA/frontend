@@ -142,8 +142,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 .bottom-nav { position: fixed; z-index: 10; bottom: 0; left: 50%; display: grid; width: min(100%, 393px); height: 80px; grid-template-columns: repeat(4, 1fr); align-items: center; padding: 10px 30px; border-radius: 25px 25px 0 0; background: #fff; transform: translateX(-50%); }
 .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: #000; font-size: 14px; line-height: 24px; }
-.bottom-nav a img { width: 24px; height: 24px; object-fit: contain; }
+.bottom-nav a svg { width: 25px; height: 25px; }
 .bottom-nav a.active { color: #9e1b32; }
+
+.profile-stat-card-wide { grid-column: 1 / -1; }
 
 .closet-screen {
   position: relative;
@@ -290,7 +292,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .style-dna-section h1, .style-dna-section h2 { margin: 0 0 15px 10px; color: #724c25; font-size: 25px; font-weight: 500; line-height: 35px; letter-spacing: -0.04em; }
 .dna-summary-card { height: 193px; padding: 22px 36px; border-radius: 15px; background: #fff; text-align: center; }
 .dna-summary-card > strong { display: block; font-size: 14px; font-weight: 500; line-height: 23px; }
-.dna-colors { display: block; width: 130px; height: 34px; margin: 15px auto 13px; }
+/* DNA dominantColors 실데이터 스와치 */
+.dna-colors { display: flex; justify-content: center; gap: 10px; margin: 15px auto 13px; }
+.dna-colors i { width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(0, 0, 0, 0.08); }
 .dna-summary-card p { margin: 0; white-space: pre-line; font-size: 12px; line-height: 22.75px; text-align: left; }
 .style-dna-loading { display: flex; min-height: 520px; flex-direction: column; align-items: center; justify-content: center; gap: 7px; padding: 0 20px; text-align: center; }
 .style-dna-loading img { width: 166px; height: 166px; object-fit: contain; animation: style-dna-loading-float 2.2s ease-in-out infinite; }
@@ -618,28 +622,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
   font-size: 12px;
   text-align: left;
 }
-
-.social-login {
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-  margin-top: 16px;
-}
-
-.social-login button {
-  display: grid;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  cursor: pointer;
-}
-
-.social-login img { width: 28px; height: 28px; border-radius: 6px; }
-.social-login .naver-login { color: #03c75a; background: #fff; font-size: 22px; font-weight: 900; }
 
 .signup-link {
   display: block;
