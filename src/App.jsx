@@ -1000,12 +1000,8 @@ function OutfitRecommendationPage() {
   const navigate = useNavigate()
   const outfits = JSON.parse(sessionStorage.getItem('mcm_outfits') || '[]')
   const selectedMood = JSON.parse(sessionStorage.getItem('mcm_selected_mood') || '{"label":"저녁 약속","labelEn":"DINNER DATE"}')
-  const fallbackLooks = [
-    { imageUrl: '/assets/outfit-recommendation/look-1.png', reason: '깔끔한 블라우스에 Tracy 비세토스 숄더백으로 포인트 !' },
-    { imageUrl: '/assets/outfit-recommendation/look-2.png', reason: 'Tracy 비세토스 숄더백에 필요한 물건만 쏙' },
-    { imageUrl: '/assets/outfit-recommendation/look-3.png', reason: '실패없는 청바지와 가디건 조합. Tracy 비세토스 숄더백으로 어깨는 가볍게' },
-  ]
-  const looks = [0, 1, 2].map((index) => ({ ...fallbackLooks[index], ...(outfits[index] || {}) }))
+  // 계약 §4-4: 후보는 1~3개 가변(화보 실패분은 서버가 제외) — 온 만큼만 렌더, 목업으로 채우지 않는다
+  const looks = Array.isArray(outfits) ? outfits : []
 
   return (
     <main className="outfit-recommendation-screen" data-node-id="53:606">
@@ -1020,10 +1016,17 @@ function OutfitRecommendationPage() {
       </section>
 
       <section className="outfit-recommendation-list" aria-label="추천 코디 목록">
+        {looks.length === 0 && (
+          <div className="outfit-recommendation-empty">
+            <p>아직 추천 코디가 없어요. 무드를 골라 코디를 만들어 보세요.</p>
+            <button type="button" onClick={() => navigate('/styling')}>무드 선택하러 가기</button>
+          </div>
+        )}
         {looks.map((look, index) => (
           <article className="outfit-recommendation-card" key={index} onClick={() => { sessionStorage.setItem('mcm_selected_outfit_index', String(index)); navigate('/styling/recommendation/detail') }} role="button" tabIndex="0">
-            <div className="outfit-recommendation-image"><img src={assetUrl(look.imageUrl || fallbackLooks[index].imageUrl)} alt={`LOOK ${index + 1}`} /></div>
-            <div className="outfit-recommendation-copy"><strong>LOOK {index + 1}</strong><p>{look.concept || look.reason || fallbackLooks[index].reason}</p></div>
+            <div className="outfit-recommendation-image"><img src={assetUrl(look.imageUrl) || '/assets/outfit-recommendation/look-1.png'} alt={`LOOK ${index + 1}`} /></div>
+            {/* concept=제목(영어 작명, 폴백이면 없음) · reason=추천 이유 본문 — 계약 §4-4 */}
+            <div className="outfit-recommendation-copy"><strong>LOOK {index + 1}{look.concept ? ` · ${look.concept}` : ''}</strong><p>{look.reason}</p></div>
           </article>
         ))}
       </section>
@@ -1050,7 +1053,8 @@ function OutfitDetailPage() {
   const outfit = outfits[index] || {}
   const closetItems = outfit.closetItems || []
   const imageUrl = assetUrl(outfit.imageUrl || '/assets/outfit-detail/look.png')
-  const reason = outfit.concept || outfit.reason || '깔끔하면서도 여성스러운 스타일이에요. 아이보리 블라우스와 플리츠 스커트로 단정한 분위기를 잡고, MCM Tracy 비세토스 숄더백으로 포인트를 더해 은근한 고급스러움과 존재감을 살린 룩입니다.'
+  // concept=제목 · reason=본문 — 서로 대체 관계가 아니다 (계약 §4-4)
+  const reason = outfit.reason || '깔끔하면서도 여성스러운 스타일이에요. 아이보리 블라우스와 플리츠 스커트로 단정한 분위기를 잡고, MCM Tracy 비세토스 숄더백으로 포인트를 더해 은근한 고급스러움과 존재감을 살린 룩입니다.'
 
   return (
     <main className="outfit-detail-screen" data-node-id="268:168">
@@ -1059,7 +1063,7 @@ function OutfitDetailPage() {
         <div><strong>추천 코디</strong><span>LOOKS</span></div>
       </header>
 
-      <h1 className="outfit-detail-look-title">LOOK {index + 1}</h1>
+      <h1 className="outfit-detail-look-title">LOOK {index + 1}{outfit.concept ? ` · ${outfit.concept}` : ''}</h1>
       <img className="outfit-detail-image" src={imageUrl} alt={`LOOK ${index + 1}`} />
 
       <section className="outfit-detail-description">
@@ -1123,7 +1127,9 @@ function StyleLogPage() {
           closetItemIds: (outfit.closetItems || []).map((item) => item.id).filter(Boolean),
           mcmProductId: outfit.mcmProduct?.id || null,
           imageUrl: outfit.imageUrl || null,
-          concept: note || outfit.concept || outfit.reason || '',
+          // 계약 §4-5: concept=후보 값 그대로(60자 제한) · note=사용자 소감 — 섞으면 60자 초과 400
+          concept: outfit.concept || null,
+          note: note || null,
           reason: outfit.reason || '',
           wornDate,
         }),
