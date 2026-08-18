@@ -1,19 +1,82 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
+const BACKEND_URL_KEY = 'mcm_backend_url'
+const AI_URL_KEY = 'mcm_ai_url'
+const DEFAULT_BACKEND_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
+
+function normalizeBaseUrl(value, fallback) {
+  const candidate = String(value || fallback).trim().replace(/\/+$/, '')
+  try {
+    const url = new URL(candidate)
+    if (!['http:', 'https:'].includes(url.protocol)) throw new Error('unsupported protocol')
+    return url.toString().replace(/\/+$/, '')
+  } catch {
+    return fallback
+  }
+}
+
+export function getBackendUrl() {
+  return normalizeBaseUrl(localStorage.getItem(BACKEND_URL_KEY), DEFAULT_BACKEND_URL)
+}
+
+export function getAiUrl() {
+  return normalizeBaseUrl(localStorage.getItem(AI_URL_KEY), 'http://localhost:8000')
+}
+
+export function saveServerUrls({ backendUrl, aiUrl }) {
+  localStorage.setItem(BACKEND_URL_KEY, normalizeBaseUrl(backendUrl, DEFAULT_BACKEND_URL))
+  localStorage.setItem(AI_URL_KEY, normalizeBaseUrl(aiUrl, 'http://localhost:8000'))
+}
+
+export function clearServerUrls() {
+  localStorage.removeItem(BACKEND_URL_KEY)
+  localStorage.removeItem(AI_URL_KEY)
+}
+
+export function assetUrl(value) {
+  if (!value) return value
+  if (value.startsWith('/assets/')) return value
+  if (value.startsWith('/')) return `${getBackendUrl()}${value}`
+  try {
+    const url = new URL(value)
+    const configured = new URL(getBackendUrl())
+    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+      url.protocol = configured.protocol
+      url.hostname = configured.hostname
+      url.port = configured.port
+    }
+    return url.toString()
+  } catch {
+    return value
+  }
+}
 
 export async function apiRequest(path, options = {}) {
   const isFormData = options.body instanceof FormData
-  const accessToken = localStorage.getItem('mcm_access_token')
-  const headers = {
-    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-    ...options.headers,
-  }
-
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    credentials: 'include',
-    headers,
+  const request = (accessToken) => fetch(`${getBackendUrl()}${path}`, {
     ...options,
+    credentials: 'include',
+    headers: {
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      ...options.headers,
+    },
   })
+
+  let accessToken = localStorage.getItem('mcm_access_token')
+  let response = await request(accessToken)
+
+  if (response.status === 401 && !path.startsWith('/api/v1/auth/')) {
+    const refreshResponse = await fetch(`${getBackendUrl()}/api/v1/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+
+    if (refreshResponse.ok) {
+      const refreshed = await refreshResponse.json()
+      accessToken = refreshed.accessToken
+      localStorage.setItem('mcm_access_token', accessToken)
+      response = await request(accessToken)
+    }
+  }
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null)
@@ -25,4 +88,4 @@ export async function apiRequest(path, options = {}) {
   return response.json()
 }
 
-export { API_BASE_URL }
+export const API_BASE_URL = DEFAULT_BACKEND_URL
