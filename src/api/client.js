@@ -78,5 +78,3 @@ export async function apiRequest(path, options = {}) {
   if (response.status === 204) return null
   return response.json()
 }
-
-export const API_BASE_URL = DEFAULT_BACKEND_URL
