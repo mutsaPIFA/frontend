@@ -1,28 +1,18 @@
-const BACKEND_URL_KEY = 'mcm_backend_url'
-const DEFAULT_BACKEND_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
-
-function normalizeBaseUrl(value, fallback) {
-  const candidate = String(value || fallback).trim().replace(/\/+$/, '')
+// 서버 주소는 빌드 타임 고정 — 배포는 nginx 단일 origin이라 빈 값(상대 경로)으로 빌드한다.
+// dev는 .env가 없으면 localhost:8080.
+const API_BASE = (() => {
+  const raw = String(import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080').trim()
   try {
-    const url = new URL(candidate)
-    if (!['http:', 'https:'].includes(url.protocol)) throw new Error('unsupported protocol')
+    const url = new URL(raw)
+    if (!['http:', 'https:'].includes(url.protocol)) return ''
     return url.toString().replace(/\/+$/, '')
   } catch {
-    return fallback
+    return ''
   }
-}
+})()
 
 export function getBackendUrl() {
-  return normalizeBaseUrl(localStorage.getItem(BACKEND_URL_KEY), DEFAULT_BACKEND_URL)
-}
-
-export function saveServerUrls({ backendUrl }) {
-  localStorage.setItem(BACKEND_URL_KEY, normalizeBaseUrl(backendUrl, DEFAULT_BACKEND_URL))
-}
-
-export function clearServerUrls() {
-  localStorage.removeItem(BACKEND_URL_KEY)
-  localStorage.removeItem('mcm_ai_url')
+  return API_BASE
 }
 
 export function assetUrl(value) {
@@ -69,6 +59,13 @@ export async function apiRequest(path, options = {}) {
       accessToken = refreshed.accessToken
       localStorage.setItem('mcm_access_token', accessToken)
       response = await request(accessToken)
+    }
+
+    // refresh까지 만료 — 화면마다 에러 문구를 띄우는 대신 로그인으로 보낸다
+    if (response.status === 401) {
+      localStorage.removeItem('mcm_access_token')
+      window.location.assign('/login')
+      throw new Error('로그인이 만료되었어요. 다시 로그인해 주세요.')
     }
   }
 

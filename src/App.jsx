@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
-import { apiRequest, assetUrl, getBackendUrl, saveServerUrls } from './api/client.js'
+import { apiRequest, assetUrl } from './api/client.js'
 
 const loadingPuppyImage = '/assets/loading-puppy.png'
 const loadingCompletePuppyImage = '/assets/loading-puppy-complete.png'
@@ -35,6 +35,64 @@ function scanItemName(tags) {
   return [tags?.color, tags?.material, tags?.category].filter(Boolean).join(' ') || '내 아이템'
 }
 
+// 태그 어휘 색 → 스와치 hex (DNA dominantColors 표시용)
+const tagColorHex = {
+  블랙: '#1f1f1f', 화이트: '#f5f2ea', 네이비: '#2c3a58', 그레이: '#9a9a94', 베이지: '#d9c9a8',
+  브라운: '#7a5a3a', 카멜: '#b9855a', 그린: '#5b6a39', 핑크: '#e2a9b8', 기타: '#c9c2b8',
+}
+
+// 하단 바 아이콘 — 화면별 피그마 export 아이콘이 제각각이던 문제를 인라인 SVG 한 세트로 통일.
+// stroke=currentColor라 활성 색(.active)이 CSS만으로 걸린다.
+const navIcons = {
+  shop: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5.5 8h13l-1.1 12.5H6.6L5.5 8Z" />
+      <path d="M9 10.5V6a3 3 0 0 1 6 0v4.5" />
+    </svg>
+  ),
+  closet: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M14.2 3.8a2.2 2.2 0 1 0-4.3.7c.2 1 1.1 1.5 2.1 1.5" />
+      <path d="M12 6v2.4" />
+      <path d="m12 8.4 8.6 6.9a1.5 1.5 0 0 1-.9 2.7H4.3a1.5 1.5 0 0 1-.9-2.7L12 8.4Z" />
+    </svg>
+  ),
+  style: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+      <rect x="4" y="4" width="7" height="7" rx="1.5" />
+      <rect x="13" y="4" width="7" height="7" rx="1.5" />
+      <rect x="4" y="13" width="7" height="7" rx="1.5" />
+      <rect x="13" y="13" width="7" height="7" rx="1.5" />
+    </svg>
+  ),
+  profile: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M5 20a7 7 0 0 1 14 0" />
+    </svg>
+  ),
+}
+
+const navTabs = [
+  { key: 'shop', to: '/', label: 'shop' },
+  { key: 'closet', to: '/closet', label: 'closet' },
+  { key: 'style', to: '/styling', label: 'style' },
+  { key: 'profile', to: '/profile', label: 'profile' },
+]
+
+function BottomNav({ active }) {
+  return (
+    <nav className="bottom-nav" aria-label="주요 메뉴">
+      {navTabs.map((tab) => (
+        <Link key={tab.key} className={active === tab.key ? 'active' : ''} to={tab.to} aria-current={active === tab.key ? 'page' : undefined}>
+          {navIcons[tab.key]}
+          <span>{tab.label}</span>
+        </Link>
+      ))}
+    </nav>
+  )
+}
+
 // 'yyyy-MM-dd' → '2026.08.18 (화)'
 function formatWornDate(value) {
   if (!value) return ''
@@ -65,10 +123,17 @@ function HomePage() {
   const [products, setProducts] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
+
+  // 타이핑마다 API를 쏘지 않게 300ms 디바운스
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(query), 300)
+    return () => clearTimeout(timer)
+  }, [query])
 
   useEffect(() => {
     const params = new URLSearchParams()
-    if (query.trim()) params.set('query', query.trim())
+    if (debouncedQuery.trim()) params.set('query', debouncedQuery.trim())
     if (category && category !== 'clothes') params.set('category', category)
     const suffix = params.toString() ? `?${params.toString()}` : ''
 
@@ -80,7 +145,7 @@ function HomePage() {
         setLoadError(error.message)
       })
       .finally(() => setIsLoading(false))
-  }, [query, category])
+  }, [debouncedQuery, category])
 
   const visibleProducts = useMemo(() => {
     if (category !== 'clothes') return products
@@ -90,8 +155,7 @@ function HomePage() {
   return (
     <main className="home-screen" data-node-id="257:661">
       <header className="home-header">
-        <button className="back-button" type="button" aria-label="뒤로 가기" onClick={() => window.history.back()} />
-        <div className="home-heading"><strong>홈</strong><span>HOME</span></div>
+        <div className="home-heading"><strong>샵</strong><span>SHOP</span></div>
       </header>
 
       <section className="home-intro">
@@ -104,7 +168,6 @@ function HomePage() {
           <img src="/assets/home/search.svg" alt="" />
           <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="어떤 상품을 찾으시나요 ?" />
         </form>
-        <button className="filter-button" type="button"><img src="/assets/home/filter.svg" alt="" /> 필터</button>
         <div className="category-tabs" role="tablist" aria-label="상품 카테고리">
           {categoryOptions.map((option) => (
             <button
@@ -151,12 +214,7 @@ function HomePage() {
         ))}
       </section>
 
-      <nav className="bottom-nav" aria-label="주요 메뉴">
-        <Link className="active" to="/"><img src="/assets/home/home.svg" alt="" /><span>home</span></Link>
-        <Link to="/closet"><img src="/assets/home/closet.svg" alt="" /><span>closet</span></Link>
-        <Link to="/styling"><img src="/assets/home/style.svg" alt="" /><span>style</span></Link>
-        <Link to="/profile"><img src="/assets/home/profile.svg" alt="" /><span>profile</span></Link>
-      </nav>
+      <BottomNav active="shop" />
     </main>
   )
 }
@@ -327,83 +385,7 @@ function ClosetPage() {
         </div>
       )}
 
-      <nav className="bottom-nav closet-bottom-nav" aria-label="주요 메뉴">
-        <Link to="/"><img src="/assets/closet/closet-home.svg" alt="" /><span>home</span></Link>
-        <Link className="active" to="/closet"><img src="/assets/closet/closet-closet.svg" alt="" /><span>closet</span></Link>
-        <Link to="/styling"><img src="/assets/closet/closet-style.svg" alt="" /><span>style</span></Link>
-        <Link to="/profile"><img src="/assets/closet/closet-profile.svg" alt="" /><span>profile</span></Link>
-      </nav>
-    </main>
-  )
-}
-
-function DnaClosetPage() {
-  const navigate = useNavigate()
-  const [items, setItems] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [loadError, setLoadError] = useState('')
-  const [selectedIds, setSelectedIds] = useState([])
-
-  useEffect(() => {
-    apiRequest('/api/v1/closet-items')
-      .then((result) => setItems(Array.isArray(result) ? result : []))
-      .catch((error) => setLoadError(error.message))
-      .finally(() => setIsLoading(false))
-  }, [])
-
-  function toggleItem(id) {
-    setSelectedIds((current) => current.includes(id) ? current.filter((itemId) => itemId !== id) : [...current, id])
-  }
-
-  function buildDna() {
-    sessionStorage.setItem('mcm_style_dna_item_ids', JSON.stringify(selectedIds))
-    navigate('/style-dna')
-  }
-
-  return (
-    <main className="closet-screen dna-closet-screen" data-node-id="210:424">
-      <header className="closet-header">
-        <button className="back-button" type="button" aria-label="뒤로 가기" onClick={() => navigate('/closet')} />
-        <div className="closet-heading"><strong>내 옷장</strong><span>MY CLOSET</span></div>
-        <button className="closet-filter-button" type="button"><img src="/assets/closet/closet-filter.svg" alt="" /> 필터</button>
-      </header>
-
-      <div className="closet-tabs" role="tablist" aria-label="옷장 출처">
-        <button className="active" type="button">전체</button>
-        <button type="button">MCM</button>
-      </div>
-
-      <section className="closet-grid" aria-label="스타일 DNA에 사용할 아이템">
-        {isLoading && <p className="grid-status">옷장을 여는 중이에요...</p>}
-        {!isLoading && loadError && <p className="grid-status" role="alert">{loadError}</p>}
-        {!isLoading && !loadError && items.length === 0 && (
-          <div className="grid-status closet-empty">
-            <p>옷장이 비어 있어요.<br />아이템을 먼저 스캔해 주세요.</p>
-          </div>
-        )}
-        {items.map((item) => {
-          const isSelected = selectedIds.includes(item.id)
-          return (
-            <button className="closet-card dna-item-card" key={item.id} type="button" onClick={() => toggleItem(item.id)} aria-pressed={isSelected}>
-              <img className="dna-selection-icon" src={`/assets/closet/${isSelected ? 'selected.svg' : 'unselected.svg'}`} alt={isSelected ? '선택됨' : '선택 안 됨'} />
-              <div className="closet-image-wrap"><img src={closetItemImage(item)} alt="" /></div>
-              <div className="closet-info"><span>{item.source === 'MCM' ? 'MCM' : 'OWN'}</span><p>{scanItemName(item)}</p></div>
-            </button>
-          )
-        })}
-      </section>
-
-      <button className="add-item-button dna-build-button" type="button" onClick={buildDna} disabled={selectedIds.length === 0}>
-        <span>스타일 DNA 만들기</span>
-        <small>BUILD MY DNA</small>
-      </button>
-
-      <nav className="bottom-nav closet-bottom-nav" aria-label="주요 메뉴">
-        <Link to="/"><img src="/assets/closet/closet-home.svg" alt="" /><span>home</span></Link>
-        <Link className="active" to="/closet"><img src="/assets/closet/closet-closet.svg" alt="" /><span>closet</span></Link>
-        <Link to="/styling"><img src="/assets/closet/closet-style.svg" alt="" /><span>style</span></Link>
-        <Link to="/profile"><img src="/assets/closet/closet-profile.svg" alt="" /><span>profile</span></Link>
-      </nav>
+      <BottomNav active="closet" />
     </main>
   )
 }
@@ -416,22 +398,28 @@ function StyleDnaPage() {
   const recommendationCarouselRef = useRef(null)
 
   useEffect(() => {
-    const storedIds = JSON.parse(sessionStorage.getItem('mcm_style_dna_item_ids') || '[1,2,3]')
-    const body = JSON.stringify({ closetItemIds: storedIds })
+    async function load() {
+      // 옷장에서 고르고 왔으면 그 아이템, 직접 진입이면 옷장 전체로 분석
+      let ids = JSON.parse(sessionStorage.getItem('mcm_style_dna_item_ids') || '[]')
+      if (!Array.isArray(ids) || ids.length === 0) {
+        const closet = await apiRequest('/api/v1/closet-items')
+        ids = (Array.isArray(closet) ? closet : []).map((item) => item.id)
+      }
+      if (ids.length === 0) throw new Error('옷장에 아이템을 먼저 담아주세요. 스캔하면 스타일 DNA를 만들 수 있어요.')
+      const body = JSON.stringify({ closetItemIds: ids })
+      const [dnaResult, recommendationResult] = await Promise.all([
+        apiRequest('/api/v1/style-dna', { method: 'POST', body }),
+        apiRequest('/api/v1/recommendations', { method: 'POST', body }),
+      ])
+      setDna(dnaResult)
+      setRecommendation(recommendationResult)
+      setRequestState('success')
+    }
 
-    Promise.all([
-      apiRequest('/api/v1/style-dna', { method: 'POST', body }),
-      apiRequest('/api/v1/recommendations', { method: 'POST', body }),
-    ])
-      .then(([dnaResult, recommendationResult]) => {
-        setDna(dnaResult)
-        setRecommendation(recommendationResult)
-        setRequestState('success')
-      })
-      .catch((error) => {
-        setRequestError(error.message || '스타일 DNA를 불러오지 못했어요.')
-        setRequestState('error')
-      })
+    load().catch((error) => {
+      setRequestError(error.message || '스타일 DNA를 불러오지 못했어요.')
+      setRequestState('error')
+    })
   }, [])
 
   const recommendationPicks = [recommendation?.bestPick, ...(recommendation?.more ?? [])]
@@ -474,7 +462,13 @@ function StyleDnaPage() {
             <h1>당신의 스타일 DNA</h1>
             <div className="dna-summary-card">
               <strong>[{dna?.keywords?.join(' · ') || '-'}]</strong>
-              <img className="dna-colors" src="/assets/dna/dna-colors.svg" alt="스타일 컬러" />
+              {(dna?.dominantColors || []).length > 0 && (
+                <div className="dna-colors" aria-label={`주요 컬러: ${dna.dominantColors.join(', ')}`}>
+                  {dna.dominantColors.map((color) => (
+                    <i key={color} title={color} style={{ background: tagColorHex[color] || tagColorHex.기타 }} />
+                  ))}
+                </div>
+              )}
               <p>{dna?.summary || '스타일 분석 결과를 준비하고 있어요.'}</p>
             </div>
           </section>
@@ -511,12 +505,7 @@ function StyleDnaPage() {
         </>
       )}
 
-      <nav className="bottom-nav style-dna-bottom-nav" aria-label="주요 메뉴">
-        <Link to="/"><img src="/assets/dna/dna-home.svg" alt="" /><span>home</span></Link>
-        <Link className="active" to="/closet"><img src="/assets/dna/dna-closet.svg" alt="" /><span>closet</span></Link>
-        <Link to="/styling"><img src="/assets/dna/dna-style.svg" alt="" /><span>style</span></Link>
-        <Link to="/profile"><img src="/assets/dna/dna-profile.svg" alt="" /><span>profile</span></Link>
-      </nav>
+      <BottomNav active="closet" />
     </main>
   )
 }
@@ -585,12 +574,7 @@ function RecommendationsPage() {
         ))}
       </section>
 
-      <nav className="bottom-nav recommendations-bottom-nav" aria-label="주요 메뉴">
-        <Link to="/"><img src="/assets/recommendations/recommend-home.svg" alt="" /><span>home</span></Link>
-        <Link className="active" to="/closet"><img src="/assets/recommendations/recommend-closet.svg" alt="" /><span>closet</span></Link>
-        <Link to="/styling"><img src="/assets/recommendations/recommend-style.svg" alt="" /><span>style</span></Link>
-        <Link to="/profile"><img src="/assets/recommendations/recommend-profile.svg" alt="" /><span>profile</span></Link>
-      </nav>
+      <BottomNav active="closet" />
     </main>
   )
 }
@@ -710,12 +694,7 @@ function ProductDetailPage() {
       {closetMessage && <p className="closet-add-detail-message" role="status">{closetMessage}</p>}
       </>)}
 
-      <nav className="bottom-nav detail-bottom-nav" aria-label="주요 메뉴">
-        <Link to="/"><img src="/assets/detail/detail-home.svg" alt="" /><span>home</span></Link>
-        <Link className="active" to="/closet"><img src="/assets/detail/detail-closet.svg" alt="" /><span>closet</span></Link>
-        <Link to="/styling"><img src="/assets/detail/detail-style.svg" alt="" /><span>style</span></Link>
-        <Link to="/profile"><img src="/assets/detail/detail-profile.svg" alt="" /><span>profile</span></Link>
-      </nav>
+      <BottomNav active="shop" />
     </main>
   )
 }
@@ -787,12 +766,7 @@ function ScanPage() {
         {isUploading ? '분석 중...' : selectedFile ? '아이템 분석하기' : '사진을 선택해주세요'}
       </button>
 
-      <nav className="bottom-nav scan-bottom-nav" aria-label="주요 메뉴">
-        <Link to="/"><img src="/assets/scan/scan-home.svg" alt="" /><span>home</span></Link>
-        <Link className="active" to="/closet"><img src="/assets/scan/scan-closet.svg" alt="" /><span>closet</span></Link>
-        <Link to="/styling"><img src="/assets/scan/scan-style.svg" alt="" /><span>style</span></Link>
-        <Link to="/profile"><img src="/assets/scan/scan-profile.svg" alt="" /><span>profile</span></Link>
-      </nav>
+      <BottomNav active="closet" />
     </main>
   )
 }
@@ -849,12 +823,7 @@ function RecognizeResultPage() {
         <button type="button" onClick={() => navigate('/closet/scan/recognize/complete')}><strong>옷장에 넣기</strong><span>PUT IN MY CLOSET</span></button>
       </div>
 
-      <nav className="bottom-nav recognize-bottom-nav" aria-label="주요 메뉴">
-        <Link to="/"><img src="/assets/recognize/home.svg" alt="" /><span>home</span></Link>
-        <Link className="active" to="/closet"><img src="/assets/recognize/closet.svg" alt="" /><span>closet</span></Link>
-        <Link to="/styling"><img src="/assets/recognize/style.svg" alt="" /><span>style</span></Link>
-        <Link to="/profile"><img src="/assets/recognize/profile.svg" alt="" /><span>profile</span></Link>
-      </nav>
+      <BottomNav active="closet" />
     </main>
   )
 }
@@ -948,12 +917,7 @@ function MoodSelectionPage() {
         <small>{isLoading ? 'CREATING LOOKS' : 'SEE LOOKS'}</small>
       </button>
 
-      <nav className="bottom-nav mood-selection-nav" aria-label="주요 메뉴">
-        <Link to="/"><img src="/assets/mood/home.svg" alt="" /><span>home</span></Link>
-        <Link to="/closet"><img src="/assets/mood/closet.svg" alt="" /><span>closet</span></Link>
-        <Link className="active" to="/styling"><img src="/assets/mood/style.svg" alt="" /><span>style</span></Link>
-        <Link to="/profile"><img src="/assets/mood/profile.svg" alt="" /><span>profile</span></Link>
-      </nav>
+      <BottomNav active="style" />
     </main>
   )
 }
@@ -998,12 +962,7 @@ function OutfitRecommendationPage() {
         <small>UPLOAD MY STYLE LOG</small>
       </button>
 
-      <nav className="bottom-nav outfit-recommendation-nav" aria-label="주요 메뉴">
-        <Link to="/"><img src="/assets/outfit-recommendation/home.svg" alt="" /><span>home</span></Link>
-        <Link to="/closet"><img src="/assets/outfit-recommendation/closet.svg" alt="" /><span>closet</span></Link>
-        <Link className="active" to="/styling"><img src="/assets/outfit-recommendation/style.svg" alt="" /><span>style</span></Link>
-        <Link to="/profile"><img src="/assets/outfit-recommendation/profile.svg" alt="" /><span>profile</span></Link>
-      </nav>
+      <BottomNav active="style" />
     </main>
   )
 }
@@ -1046,12 +1005,7 @@ function OutfitDetailPage() {
         <button className="outfit-detail-upload" type="button" onClick={() => navigate('/archive')}><span>이 코디 기록하기</span><small>UPLOAD THIS STYLE LOG</small></button>
       </div>
 
-      <nav className="bottom-nav outfit-detail-nav" aria-label="주요 메뉴">
-        <Link to="/"><img src="/assets/outfit-detail/home.svg" alt="" /><span>home</span></Link>
-        <Link to="/closet"><img src="/assets/outfit-detail/closet.svg" alt="" /><span>closet</span></Link>
-        <Link className="active" to="/styling"><img src="/assets/outfit-detail/style.svg" alt="" /><span>style</span></Link>
-        <Link to="/profile"><img src="/assets/outfit-detail/profile.svg" alt="" /><span>profile</span></Link>
-      </nav>
+      <BottomNav active="style" />
     </main>
   )
 }
@@ -1120,12 +1074,7 @@ function StyleLogPage() {
       {message && <p className="style-log-message" role="status">{message}</p>}
       <button className="style-log-submit" type="button" onClick={handleSave} disabled={isSaving}><span>{isSaving ? '저장 중' : '업로드하기'}</span><small>{isSaving ? 'SAVING' : 'UPLOAD'}</small></button>
 
-      <nav className="bottom-nav style-log-nav" aria-label="주요 메뉴">
-        <Link to="/"><img src="/assets/style-log/home.svg" alt="" /><span>home</span></Link>
-        <Link to="/closet"><img src="/assets/style-log/closet.svg" alt="" /><span>closet</span></Link>
-        <Link className="active" to="/styling"><img src="/assets/style-log/style.svg" alt="" /><span>style</span></Link>
-        <Link to="/profile"><img src="/assets/style-log/profile.svg" alt="" /><span>profile</span></Link>
-      </nav>
+      <BottomNav active="style" />
     </main>
   )
 }
@@ -1133,33 +1082,45 @@ function StyleLogPage() {
 function StyleLogDetailPage() {
   const navigate = useNavigate()
   const [look, setLook] = useState(() => JSON.parse(sessionStorage.getItem('mcm_saved_look') || 'null'))
-  // 방금 저장하고 온 경우 후보 데이터(아이템 이름·제품 이름)가 세션에 남아 있어 재조회를 아낀다
-  const candidate = JSON.parse(sessionStorage.getItem('mcm_outfits') || '[]')[Number(sessionStorage.getItem('mcm_selected_outfit_index') || 0)] || {}
-  const [mcmProduct, setMcmProduct] = useState(null)
-  const [closetItems, setClosetItems] = useState(candidate.closetItems || [])
+  const candidate = useMemo(
+    () => JSON.parse(sessionStorage.getItem('mcm_outfits') || '[]')[Number(sessionStorage.getItem('mcm_selected_outfit_index') || 0)] || {},
+    [],
+  )
+  const [fetchedProduct, setFetchedProduct] = useState(null)
+  const [fetchedItems, setFetchedItems] = useState([])
+
+  // 세션의 후보 데이터는 "방금 저장한 그 룩"과 구성이 일치할 때만 신뢰한다 —
+  // 캘린더로 연 옛 룩에 최신 후보의 아이템·제품 이름이 섞이면 안 됨
+  const lookItemIds = (look?.closetItemIds || []).slice().sort((a, b) => a - b).join(',')
+  const candidateMatches =
+    Boolean(look) &&
+    candidate.mcmProduct?.id === look.mcmProductId &&
+    (candidate.closetItems || []).map((item) => item.id).sort((a, b) => a - b).join(',') === lookItemIds
 
   useEffect(() => {
     if (!look?.id) return
     apiRequest(`/api/v1/looks/${look.id}`).then(setLook).catch(() => {})
   }, [look?.id])
 
-  // 계약 §4-5: 저장된 룩은 mcmProductId·closetItemIds(아이디만) — 이름은 각각 조회해 채운다
+  // 계약 §4-5: 저장된 룩은 mcmProductId·closetItemIds(아이디만) — 표시 이름은 조회해 채운다
   useEffect(() => {
-    if (candidate.mcmProduct || !look?.mcmProductId) return
-    apiRequest(`/api/v1/mcm-products/${look.mcmProductId}`).then(setMcmProduct).catch(() => {})
-  }, [candidate.mcmProduct, look?.mcmProductId])
+    if (candidateMatches || !look?.mcmProductId) return
+    apiRequest(`/api/v1/mcm-products/${look.mcmProductId}`).then(setFetchedProduct).catch(() => {})
+  }, [candidateMatches, look?.mcmProductId])
 
   useEffect(() => {
-    if ((candidate.closetItems || []).length > 0 || !(look?.closetItemIds || []).length) return
+    if (candidateMatches || !lookItemIds) return
+    const ids = lookItemIds.split(',').map(Number)
     apiRequest('/api/v1/closet-items')
-      .then((all) => setClosetItems((Array.isArray(all) ? all : []).filter((item) => look.closetItemIds.includes(item.id))))
+      .then((all) => setFetchedItems((Array.isArray(all) ? all : []).filter((item) => ids.includes(item.id))))
       .catch(() => {})
-  }, [candidate.closetItems, look?.closetItemIds])
+  }, [candidateMatches, lookItemIds])
 
-  const imageUrl = assetUrl(look?.generatedImageUrl || candidate.imageUrl)
-  const product = candidate.mcmProduct || mcmProduct
-  const concept = look?.concept || candidate.concept
-  const bodyText = look?.note || look?.reason || candidate.reason || ''
+  const closetItems = candidateMatches ? candidate.closetItems || [] : fetchedItems
+  const product = candidateMatches ? candidate.mcmProduct : fetchedProduct
+  const imageUrl = assetUrl(look?.generatedImageUrl || (candidateMatches ? candidate.imageUrl : ''))
+  const concept = look?.concept
+  const bodyText = look?.note || look?.reason || ''
 
   return (
     <main className="style-log-detail-screen" data-node-id="257:558">
@@ -1178,12 +1139,7 @@ function StyleLogDetailPage() {
           <div className="style-log-used-item"><b>MCM 추천</b><p>{product.name}</p>{product.id && <Link to={`/products/${product.id}`}>보러가기</Link>}</div>
         )}
       </section>
-      <nav className="bottom-nav style-log-detail-nav" aria-label="주요 메뉴">
-        <Link to="/"><img src="/assets/style-log-detail/home.svg" alt="" /><span>home</span></Link>
-        <Link to="/closet"><img src="/assets/style-log-detail/closet.svg" alt="" /><span>closet</span></Link>
-        <Link className="active" to="/styling"><img src="/assets/style-log-detail/style.svg" alt="" /><span>style</span></Link>
-        <Link to="/profile"><img src="/assets/style-log-detail/profile.svg" alt="" /><span>profile</span></Link>
-      </nav>
+      <BottomNav active="style" />
     </main>
   )
 }
@@ -1192,8 +1148,6 @@ function StyleCalendarPage() {
   const navigate = useNavigate()
   const [viewDate] = useState(() => new Date())
   const [looks, setLooks] = useState([])
-  const [recommendedOnly, setRecommendedOnly] = useState(true)
-  const [mineOnly, setMineOnly] = useState(false)
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
   const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`
@@ -1204,26 +1158,11 @@ function StyleCalendarPage() {
       .catch(() => setLooks([]))
   }, [monthKey])
 
-  const visibleLooks = looks.filter((look) => {
-    if (recommendedOnly && !look.mcmProductId) return false
-    if (mineOnly && look.mcmProductId) return false
-    return true
-  })
-  const markedDates = visibleLooks.map((look) => Number(String(look.wornDate).slice(-2)))
+  const markedDates = looks.map((look) => Number(String(look.wornDate).slice(-2)))
   const firstDay = new Date(year, month, 1)
   const mondayOffset = (firstDay.getDay() + 6) % 7
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const cells = Array.from({ length: mondayOffset + daysInMonth }, (_, index) => index < mondayOffset ? null : index - mondayOffset + 1)
-
-  function toggleRecommended() {
-    setRecommendedOnly((current) => !current)
-    setMineOnly(false)
-  }
-
-  function toggleMine() {
-    setMineOnly((current) => !current)
-    setRecommendedOnly(false)
-  }
 
   return (
     <main className="style-calendar-screen" data-node-id="257:209">
@@ -1237,7 +1176,7 @@ function StyleCalendarPage() {
         <div className="calendar-grid">
           {cells.map((day, index) => (
             <button key={`${index}-${day || 'empty'}`} className={day && markedDates.includes(day) ? 'marked' : ''} type="button" disabled={!day} onClick={() => {
-              const look = visibleLooks.find((item) => Number(String(item.wornDate).slice(-2)) === day)
+              const look = looks.find((item) => Number(String(item.wornDate).slice(-2)) === day)
               if (look?.id) {
                 sessionStorage.setItem('mcm_saved_look', JSON.stringify(look))
                 navigate('/archive/detail')
@@ -1249,24 +1188,8 @@ function StyleCalendarPage() {
           ))}
         </div>
       </section>
-      <FilterToggle className="calendar-recommended-filter" title="추천 코디 기록만 보기" description="MCM MUSE가 추천한 코디만 보여줘요" on={recommendedOnly} onClick={toggleRecommended} />
-      <FilterToggle className="calendar-mine-filter" title="나의 코디 기록만 보기" description="내가 직접 기록한 코디만 보여줘요" on={mineOnly} onClick={toggleMine} />
-      <nav className="bottom-nav style-calendar-nav" aria-label="주요 메뉴">
-        <Link to="/"><img src="/assets/style-calendar/home.svg" alt="" /><span>home</span></Link>
-        <Link to="/closet"><img src="/assets/style-calendar/closet.svg" alt="" /><span>closet</span></Link>
-        <Link className="active" to="/styling"><img src="/assets/style-calendar/style.svg" alt="" /><span>style</span></Link>
-        <Link to="/profile"><img src="/assets/style-calendar/profile.svg" alt="" /><span>profile</span></Link>
-      </nav>
+      <BottomNav active="style" />
     </main>
-  )
-}
-
-function FilterToggle({ className, title, description, on, onClick }) {
-  return (
-    <section className={`calendar-filter ${className}`}>
-      <div><strong>{title}</strong><p>{description}</p></div>
-      <button className={on ? 'on' : ''} type="button" aria-pressed={on} onClick={onClick}><span /></button>
-    </section>
   )
 }
 
@@ -1315,12 +1238,7 @@ function ClosetAddCompletePage() {
         <small>GO TO MY CLOSET</small>
       </button>
 
-      <nav className="bottom-nav closet-add-complete-nav" aria-label="주요 메뉴">
-        <Link to="/"><img src="/assets/closet-complete/home.svg" alt="" /><span>home</span></Link>
-        <Link className="active" to="/closet"><img src="/assets/closet-complete/closet.svg" alt="" /><span>closet</span></Link>
-        <Link to="/styling"><img src="/assets/closet-complete/style.svg" alt="" /><span>style</span></Link>
-        <Link to="/profile"><img src="/assets/closet-complete/profile.svg" alt="" /><span>profile</span></Link>
-      </nav>
+      <BottomNav active="closet" />
     </main>
   )
 }
@@ -1329,7 +1247,6 @@ function ProfilePage() {
   const navigate = useNavigate()
   const [me, setMe] = useState({ nickname: '', email: '' })
   const [looks, setLooks] = useState([])
-  const [message, setMessage] = useState('')
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   useEffect(() => {
@@ -1364,104 +1281,32 @@ function ProfilePage() {
           <button className="profile-back-button" type="button" aria-label="홈으로 가기" onClick={() => navigate('/')}>
             <img src="/assets/profile/back.svg" alt="" />
           </button>
-          <div><strong>홈 Home</strong><span>HOME</span></div>
-          <button className="profile-action-button" type="button" aria-label="서버 설정" onClick={() => navigate('/settings')}>
-            <img src="/assets/profile/profile.svg" alt="" />
-          </button>
+          <div><strong>프로필</strong><span>PROFILE</span></div>
+          <span />
         </header>
 
         <section className="profile-identity">
           <div className="profile-avatar">
             <img src="/assets/profile/profile-mascot.png" alt="프로필 이미지" />
-            <span><img src="/assets/profile/edit.svg" alt="" /></span>
           </div>
           <h1>{me.nickname || ' '}</h1>
           {me.email && <p>{me.email}</p>}
         </section>
 
         <section className="profile-stats-grid">
-          <button type="button" className="profile-stat-card" onClick={() => navigate('/archive/calendar')}>
+          <button type="button" className="profile-stat-card profile-stat-card-wide" onClick={() => navigate('/archive/calendar')}>
             <span className="profile-stat-icon"><img src="/assets/profile/looks.svg" alt="" /></span>
             <span className="profile-stat-label">저장한 코디</span>
             <strong>{looks.length} <small>looks</small></strong>
           </button>
-          <button type="button" className="profile-purchase-card" onClick={() => setMessage('구매 이력은 결제 API 연결 후 제공됩니다.')}>
-            <span className="profile-stat-icon"><img src="/assets/profile/purchase.svg" alt="" /></span>
-            <span><strong>구매 이력</strong><small>PURCHASE HISTORY</small></span>
-            <img src="/assets/profile/chevron-right.svg" alt="" />
-          </button>
         </section>
-
-        <section className="profile-settings">
-          <p>ACCOUNT SETTINGS</p>
-          <button type="button" onClick={() => navigate('/settings')}><img src="/assets/profile/bell.svg" alt="" /><span>서버 연결 설정</span><img src="/assets/profile/chevron-right.svg" alt="" /></button>
-          <button type="button"><img src="/assets/profile/lock.svg" alt="" /><span>개인정보 및 보안</span><img src="/assets/profile/chevron-right.svg" alt="" /></button>
-          <button type="button"><img src="/assets/profile/help.svg" alt="" /><span>고객센터</span><img src="/assets/profile/chevron-right.svg" alt="" /></button>
-        </section>
-
-        {message && <p className="profile-message" role="status">{message}</p>}
         <section className="profile-logout">
           <button type="button" onClick={handleLogout} disabled={isLoggingOut}>{isLoggingOut ? '로그아웃 중...' : '로그아웃'}</button>
           <span>MCM MUSE</span>
         </section>
       </div>
 
-      <nav className="profile-bottom-nav" aria-label="주요 메뉴">
-        <Link to="/"><img src="/assets/profile/home.svg" alt="" /><span>Home</span></Link>
-        <Link to="/closet"><img src="/assets/profile/closet.svg" alt="" /><span>Closet</span></Link>
-        <Link to="/closet/scan"><img className="profile-scan-icon" src="/assets/profile/scan-bg.svg" alt="" /><span>Scan</span></Link>
-        <Link to="/styling"><img src="/assets/profile/style.svg" alt="" /><span>Style</span></Link>
-        <Link className="active" to="/profile"><img src="/assets/profile/profile-active.svg" alt="" /><span>Profile</span></Link>
-      </nav>
-    </main>
-  )
-}
-
-function SettingsPage() {
-  const navigate = useNavigate()
-  const [backendUrl, setBackendUrl] = useState(getBackendUrl())
-  const [message, setMessage] = useState('')
-  const [error, setError] = useState('')
-
-  function handleSave(event) {
-    event.preventDefault()
-    setError('')
-    try {
-      saveServerUrls({ backendUrl })
-      setBackendUrl(getBackendUrl())
-      setMessage('서버 주소가 저장되었습니다. APK를 다시 설치할 필요가 없습니다.')
-    } catch {
-      setError('주소를 http:// 또는 https:// 형식으로 입력해주세요.')
-    }
-  }
-
-  async function handleTest() {
-    setMessage('')
-    setError('')
-    try {
-      const response = await fetch(`${backendUrl.replace(/\/+$/, '')}/actuator/health`)
-      if (!response.ok) throw new Error()
-      setMessage('백엔드 연결에 성공했습니다.')
-    } catch {
-      setError('백엔드에 연결할 수 없습니다. 주소와 같은 Wi-Fi 연결을 확인해주세요.')
-    }
-  }
-
-  return (
-    <main className="server-settings-screen">
-      <header className="server-settings-header">
-        <button type="button" onClick={() => navigate(-1)} aria-label="뒤로 가기">‹</button>
-        <div><strong>서버 설정</strong><span>SERVER SETTINGS</span></div>
-        <span />
-      </header>
-      <form className="server-settings-card" onSubmit={handleSave}>
-        <p className="server-settings-intro">팀원의 PC에서 실행 중인 서버 주소를 입력하세요.<br />저장 후 APK를 다시 빌드하지 않아도 됩니다.</p>
-        <label>백엔드 주소<input value={backendUrl} onChange={(event) => setBackendUrl(event.target.value)} placeholder="http://192.168.0.20:8080" /></label>
-        <p className="server-settings-help">휴대폰과 서버 PC가 같은 Wi-Fi에 연결되어 있어야 합니다.</p>
-        {message && <p className="server-settings-message success" role="status">{message}</p>}
-        {error && <p className="server-settings-message error" role="alert">{error}</p>}
-        <div className="server-settings-actions"><button type="button" onClick={handleTest}>연결 테스트</button><button type="submit">저장하기</button></div>
-      </form>
+      <BottomNav active="profile" />
     </main>
   )
 }
@@ -1532,12 +1377,6 @@ function LoginPage() {
           </button>
         </form>
 
-        <div className="social-login" data-node-id="72:33" aria-label="소셜 로그인">
-          <button type="button" aria-label="카카오 로그인">
-            <img src="/assets/kakao-login.png" alt="카카오" />
-          </button>
-          <button className="naver-login" type="button" aria-label="네이버 로그인">N</button>
-        </div>
         <Link className="signup-link" to="/signup" data-node-id="65:12">
           <span className="mcm-wordmark">MCM</span> 회원가입
         </Link>
@@ -1548,7 +1387,7 @@ function LoginPage() {
 
 function SignupPage() {
   const navigate = useNavigate()
-  const [form, setForm] = useState({ nickname: '', email: '', phone: '', password: '' })
+  const [form, setForm] = useState({ nickname: '', email: '', password: '' })
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -1592,21 +1431,11 @@ function SignupPage() {
           <input id="nickname" name="nickname" placeholder="성명*" value={form.nickname} onChange={updateField} required />
           <label className="sr-only" htmlFor="signup-email">이메일 주소</label>
           <input id="signup-email" name="email" type="email" placeholder="이메일 주소*" value={form.email} onChange={updateField} required />
-          <label className="sr-only" htmlFor="phone">전화번호</label>
-          <input id="phone" name="phone" type="tel" placeholder="전화번호" value={form.phone} onChange={updateField} />
           <label className="sr-only" htmlFor="signup-password">비밀번호</label>
           <input id="signup-password" name="password" type="password" placeholder="비밀번호*" value={form.password} onChange={updateField} required />
 
           <p className="signup-required-note">*표시가 있는 모든 항목은 필수입니다.</p>
-          <button className="signup-consent" type="button">동의하기</button>
           {error && <p className="signup-error" role="alert">{error}</p>}
-
-          <div className="social-login signup-social" aria-label="소셜 로그인">
-            <button type="button" aria-label="카카오 로그인">
-              <img src="/assets/kakao-signup.png" alt="카카오" />
-            </button>
-            <button className="naver-login" type="button" aria-label="네이버 로그인">N</button>
-          </div>
 
           <button className="signup-submit" type="submit" disabled={isSubmitting} data-node-id="72:47">
             <span>{isSubmitting ? '가입 중' : '회원가입'}</span>
@@ -1666,7 +1495,6 @@ function App() {
       <Route path="/closet/scan" element={<ProtectedRoute><ScanPage /></ProtectedRoute>} />
       <Route path="/closet/scan/recognize" element={<ProtectedRoute><RecognizeResultPage /></ProtectedRoute>} />
       <Route path="/closet/scan/recognize/complete" element={<ProtectedRoute><ClosetAddCompletePage /></ProtectedRoute>} />
-      <Route path="/closet/style-dna" element={<ProtectedRoute><DnaClosetPage /></ProtectedRoute>} />
       <Route path="/style-dna" element={<ProtectedRoute><StyleDnaPage /></ProtectedRoute>} />
       <Route path="/products/recommendations" element={<ProtectedRoute><RecommendationsPage /></ProtectedRoute>} />
       <Route path="/products/:id" element={<ProtectedRoute><ProductDetailPage /></ProtectedRoute>} />
@@ -1678,7 +1506,6 @@ function App() {
       <Route path="/archive/detail" element={<ProtectedRoute><StyleLogDetailPage /></ProtectedRoute>} />
       <Route path="/archive/calendar" element={<ProtectedRoute><StyleCalendarPage /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-      <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
       <Route path="*" element={<PlaceholderPage title="페이지를 찾을 수 없습니다" />} />
     </Routes>
   )
