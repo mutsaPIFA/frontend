@@ -75,7 +75,7 @@ export function MoodSelectionPage() {
             aria-pressed={selectedMoodId === mood.id}
             onClick={() => setSelectedMoodId((current) => current === mood.id ? null : mood.id)}
           >
-            <span className="mood-icon"><img src={moodIcon(mood.iconKey)} alt="" /></span>
+            <span className={`mood-icon mood-icon-${mood.iconKey}`}><img src={moodIcon(mood.iconKey)} alt="" /></span>
             <strong>{mood.label}</strong>
             <small>{mood.labelEn}</small>
           </button>

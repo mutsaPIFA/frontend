@@ -76,7 +76,7 @@ export function ShopPage() {
 
       <section className="home-intro">
         <img src={homePuppyImage} alt="MCM MUSE mascot" />
-        <h1>당신만의 <span>MCM</span> 스타일,<br /><span>MCM MUSE</span></h1>
+        <h1>취향을 아는 샵,<br /><span>MCM MUSE</span></h1>
       </section>
 
       <section className="catalog-controls">

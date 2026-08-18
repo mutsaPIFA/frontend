@@ -1179,6 +1179,46 @@ button:not(:disabled):active,
   filter: brightness(0.94);
 }
 
+.recommendation-card-clickable { cursor: pointer; }
+.recommendation-card-clickable:active { filter: brightness(0.96); }
+
+/* ===== 모션 시스템 — "살아있는 옷장" (팀 확정 디자인 방향) ===== */
+@keyframes float-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+@keyframes rise-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+/* 마스코트는 항상 살짝 떠 있는다 */
+.home-intro img,
+.mood-curator-message img,
+.style-calendar-message img,
+.closet-add-complete-image,
+.profile-avatar img { animation: float-bob 2.6s ease-in-out infinite; }
+
+/* 카드·리스트 스태거 등장 */
+:is(.mood-grid, .product-grid, .closet-grid, .outfit-recommendation-list, .recommendation-list) > * { animation: rise-in 0.45s ease-out both; }
+:is(.mood-grid, .product-grid, .closet-grid, .outfit-recommendation-list, .recommendation-list) > *:nth-child(2) { animation-delay: 0.05s; }
+:is(.mood-grid, .product-grid, .closet-grid, .outfit-recommendation-list, .recommendation-list) > *:nth-child(3) { animation-delay: 0.1s; }
+:is(.mood-grid, .product-grid, .closet-grid, .outfit-recommendation-list, .recommendation-list) > *:nth-child(4) { animation-delay: 0.15s; }
+:is(.mood-grid, .product-grid, .closet-grid, .outfit-recommendation-list, .recommendation-list) > *:nth-child(5) { animation-delay: 0.2s; }
+:is(.mood-grid, .product-grid, .closet-grid, .outfit-recommendation-list, .recommendation-list) > *:nth-child(6) { animation-delay: 0.25s; }
+:is(.mood-grid, .product-grid, .closet-grid, .outfit-recommendation-list, .recommendation-list) > *:nth-child(7) { animation-delay: 0.3s; }
+:is(.mood-grid, .product-grid, .closet-grid, .outfit-recommendation-list, .recommendation-list) > *:nth-child(8) { animation-delay: 0.35s; }
+
+/* 모달 등장 */
+.item-modal { animation: rise-in 0.28s ease-out; }
+
+/* 무드 카드 — 회색 박제 대신 무드별 파스텔 + 살아있는 선택 반응 */
+.mood-card { transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.2s ease; }
+.mood-card.selected { transform: translateY(-4px); border-color: #9e7143; box-shadow: 0 12px 24px rgba(122, 92, 58, 0.16); }
+.mood-card.selected .mood-icon { animation: float-bob 1.7s ease-in-out infinite; }
+/* 아이콘 svg에 박힌 회색 원 배경을 파스텔 위에 녹인다 */
+.mood-icon img { mix-blend-mode: multiply; }
+.mood-icon-dinner { background: #f4cfb4; }
+.mood-icon-office { background: #cfdce9; }
+.mood-icon-trip { background: #c5d3ec; }
+.mood-icon-daily { background: #eeddb4; }
+.mood-icon-walk { background: #cde4bd; }
+.mood-icon-party { background: #e2c8f0; }
+
 /* 로딩 오버레이 멘트 순환 — 바뀔 때 살짝 페이드 */
 .loading-overlay-copy { display: flex; flex-direction: column; align-items: center; gap: 6px; animation: overlay-fade 0.5s ease; }
 @keyframes overlay-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }

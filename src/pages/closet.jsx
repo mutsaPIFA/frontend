@@ -137,15 +137,15 @@ export function ClosetPage() {
       <div className="closet-actions">
         {!isSelecting ? (
           <button className="add-item-button dna-build-button" type="button" onClick={toggleSelecting}>
-            <span>스타일 DNA 만들기</span>
+            <span>스타일 추천 받기</span>
           </button>
         ) : (
           <>
             <button className="add-item-button closet-cancel-button" type="button" onClick={toggleSelecting}>
-              <span>선택 취소</span>
+              <span>취소</span>
             </button>
             <button className="add-item-button dna-build-button" type="button" onClick={buildDna} disabled={selectedIds.length === 0}>
-              <span>DNA 생성하기 {selectedIds.length > 0 ? `(${selectedIds.length})` : ''}</span>
+              <span>생성 {selectedIds.length > 0 ? `(${selectedIds.length})` : ''}</span>
             </button>
           </>
         )}
@@ -375,6 +375,7 @@ export function ClosetAddCompletePage() {
 }
 
 export function StyleDnaPage() {
+  const navigate = useNavigate()
   const recommendationCarouselRef = useRef(null)
 
   const dnaIds = stylingSession.dnaItemIds()
@@ -414,11 +415,15 @@ export function StyleDnaPage() {
       </header>
 
       {isLoading && (
-        <section className="style-dna-loading" aria-live="polite">
-          <img src="/assets/loading-puppy-styling.png" alt="" />
-          <strong>스타일 DNA를 분석하고 있어요</strong>
-          <span>잠시만 기다려주세요</span>
-        </section>
+        <LoadingOverlay
+          image="/assets/loading-puppy-styling.png"
+          messages={[
+            { title: '옷장을 살펴보고 있어요', subtitle: '어떤 취향인지 알아보는 중이에요' },
+            { title: '컬러와 무드를 분석하고 있어요', subtitle: '자주 입는 색을 모아보는 중' },
+            { title: '스타일 키워드를 뽑고 있어요', subtitle: '당신만의 DNA로 정리하는 중이에요' },
+            { title: '어울리는 MCM도 고르고 있어요', subtitle: '거의 다 됐어요!' },
+          ]}
+        />
       )}
 
       {!isLoading && error && (
@@ -448,20 +453,32 @@ export function StyleDnaPage() {
 
           <section className="style-dna-section recommendation-section">
             <div className="recommendation-heading-row">
-              <h2>채우면 좋은 한가지</h2>
+              <h2>채우면 좋은 아이템</h2>
               <span className="recommendation-count">{recommendationPicks.length} PICKS</span>
             </div>
             <div className="recommendation-carousel-wrap">
               <button className="recommendation-arrow recommendation-arrow-prev" type="button" aria-label="이전 추천 제품" onClick={() => moveRecommendations(-1)}>‹</button>
               <div className="recommendation-carousel" ref={recommendationCarouselRef} aria-label="추천 상품 5가지">
                 {recommendationPicks.map((pick, index) => (
-                  <article className="recommendation-card" key={pick.product.id}>
+                  <article
+                    className="recommendation-card recommendation-card-clickable"
+                    key={pick.product.id}
+                    role="link"
+                    tabIndex={0}
+                    onClick={() => navigate(`/products/${pick.product.id}`)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        navigate(`/products/${pick.product.id}`)
+                      }
+                    }}
+                  >
                     <span className="perfect-match">{index === 0 ? 'PERFECT MATCH' : `MATCH ${index + 1}`}</span>
                     <FadeImg className="recommendation-image" src={assetUrl(pick.product.imageUrl)} alt={pick.product.name} />
                     <p>{pick.product.name}</p>
                     <div className="recommendation-reason">
                       <div className="recommendation-reason-copy">
-                        <strong>추천 근거</strong>
+                        <strong>스타일리스트 코멘트</strong>
                         <span>{pick.reason || '현재 옷장 아이템과 자연스럽게 어울리는 상품이에요.'}</span>
                       </div>
                       <div className="recommendation-mascot">
