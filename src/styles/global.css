@@ -130,7 +130,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .product-card { min-width: 0; overflow: hidden; border-radius: 15px; background: #fff; }
 .product-card-clickable { cursor: pointer; outline: none; }
 .product-card-clickable:focus-visible { box-shadow: 0 0 0 3px #5b6a39; }
-.product-image-wrap { position: relative; display: grid; height: 151px; place-items: center; background: #eceae6; }
+/* 카드와 같은 흰색으로 통일 — 상품 이미지는 누끼(cutoutUrl) 우선이라 배경 이질감이 없다 */
+.product-image-wrap { position: relative; display: grid; height: 151px; place-items: center; background: #fff; }
 .product-image-wrap > img { width: 70%; height: 88%; object-fit: contain; }
 .favorite-button { position: absolute; top: 10px; right: 10px; width: 20px; height: 20px; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .favorite-button img { width: 100%; height: 100%; object-fit: contain; }
@@ -355,7 +356,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .detail-header strong { font-size: 20px; line-height: 24px; }
 .detail-header span { font-size: 14px; line-height: 24px; }
 .detail-hero { width: calc(100% - 40px); margin: 17px auto 0; overflow: hidden; border-radius: 15px; background: #fff; }
-.detail-image-panel { display: grid; height: 263px; place-items: center; background: #eceae6; }
+.detail-image-panel { display: grid; height: 263px; place-items: center; background: #fff; }
 .detail-image-panel img { width: 80%; height: 78%; object-fit: contain; }
 .detail-overview { height: 272px; padding: 39px 20px 20px; text-align: center; }
 .detail-overview h1 { margin: 0; font-size: 20px; font-weight: 500; line-height: 24px; letter-spacing: -0.04em; }
@@ -1022,5 +1023,92 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
   background: #6b7b47;
   color: #fff;
   font-weight: 600;
+  cursor: pointer;
+}
+
+/* 제품 상세 캐러셀 (계약 §2 imageUrls) — 스크롤 스냅 + 점 인디케이터 */
+.detail-image-panel { position: relative; display: block; padding: 0; }
+.detail-carousel {
+  display: flex;
+  height: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.detail-carousel::-webkit-scrollbar { display: none; }
+.detail-carousel img {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  scroll-snap-align: center;
+  padding: 24px 10%;
+  box-sizing: border-box;
+}
+.detail-carousel-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.detail-carousel-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c9c2b8;
+  transition: background 0.2s;
+}
+.detail-carousel-dots i.active { background: #6b5b45; }
+
+/* 로딩·빈·에러 공통 상태 문구 — 그리드/리스트 어디서든 전체 폭 중앙 */
+.grid-status {
+  grid-column: 1 / -1;
+  margin: 34px 20px;
+  color: #7a715f;
+  font-size: 14px;
+  line-height: 22px;
+  text-align: center;
+}
+.closet-empty p { margin: 0; }
+
+/* 스캔 태그 확인·수정 (계약 §3-1: 태그는 사용자 수정 가능) */
+.recognize-tags {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+  width: calc(100% - 40px);
+  margin: 14px auto 0;
+}
+.recognize-tags label { display: flex; flex-direction: column; gap: 4px; }
+.recognize-tags span { font-size: 11px; color: #7a715f; padding-left: 4px; }
+.recognize-tags select {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #e2dccd;
+  border-radius: 12px;
+  background: #fff;
+  color: #3a3427;
+  font: inherit;
+  font-size: 14px;
+}
+
+/* 무드 6종 카드가 하단 고정 버튼 아래로 안 깔리게 스크롤 여유 */
+.mood-grid { padding-bottom: 240px; }
+
+.style-log-photo-empty { margin: 0; padding: 40px 20px; color: #7a715f; font-size: 13px; text-align: center; }
+
+/* 무드 화면 날짜 선택 — 캘린더 아이콘 탭 = date picker (wornDate) */
+.mood-calendar-button { position: relative; display: inline-flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
+.mood-calendar-button small { font-size: 10px; color: #9e7143; font-weight: 600; }
+.mood-calendar-button input[type='date'] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
   cursor: pointer;
 }
