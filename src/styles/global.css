@@ -1004,3 +1004,23 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
 .calendar-filter button.on { background: #cfb8a1; }
 .calendar-filter button.on span { left: 30px; }
 .style-calendar-nav { position: fixed; }
+
+/* 추천 코디 빈 상태 (후보 없이 진입 시) */
+.outfit-recommendation-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 48px 24px;
+  text-align: center;
+  color: #6b6257;
+}
+.outfit-recommendation-empty button {
+  border: none;
+  border-radius: 24px;
+  padding: 12px 22px;
+  background: #6b7b47;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
