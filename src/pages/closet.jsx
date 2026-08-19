@@ -7,7 +7,8 @@ import FadeImg from '../components/FadeImg.jsx'
 import ItemInfoModal from '../components/ItemInfoModal.jsx'
 import LoadingOverlay from '../components/LoadingOverlay.jsx'
 import { invalidateApiCache, useApi } from '../hooks/useApi.js'
-import { closetItemImage, itemDisplayName, productThumb, scanItemName } from '../lib/format.js'
+import ProductImg from '../components/ProductImg.jsx'
+import { closetItemImage, itemDisplayName, scanItemName } from '../lib/format.js'
 import { tagColorHex, tagOptions } from '../lib/vocab.js'
 import { stylingSession } from '../lib/stylingSession.js'
 
@@ -506,7 +507,7 @@ export function StyleDnaPage() {
                     }}
                   >
                     <span className="perfect-match">{index === 0 ? 'PERFECT MATCH' : `MATCH ${index + 1}`}</span>
-                    <FadeImg className="recommendation-image" src={productThumb(assetUrl(pick.product.imageUrl), 480)} alt={pick.product.name} />
+                    <ProductImg className="recommendation-image" src={pick.product.imageUrl} width={480} alt={pick.product.name} />
                     <p>{pick.product.name}</p>
                     <div className="recommendation-reason">
                       <div className="recommendation-reason-copy">

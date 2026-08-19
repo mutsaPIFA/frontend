@@ -4,8 +4,9 @@ import { apiRequest, assetUrl } from '../api/client.js'
 import BackButton from '../components/BackButton.jsx'
 import BottomNav from '../components/BottomNav.jsx'
 import FadeImg from '../components/FadeImg.jsx'
+import ProductImg from '../components/ProductImg.jsx'
 import { invalidateApiCache, useApi } from '../hooks/useApi.js'
-import { formatPrice, formatSize, productThumb } from '../lib/format.js'
+import { formatPrice, formatSize } from '../lib/format.js'
 import { categoryOptions, tagColorHex } from '../lib/vocab.js'
 import { stylingSession } from '../lib/stylingSession.js'
 
@@ -226,7 +227,7 @@ export function ShopPage() {
             }}
           >
             <div className="product-image-wrap">
-              <FadeImg src={productThumb(assetUrl(product.imageUrl || product.cutoutUrl), 400)} alt="" loading="lazy" />
+              <ProductImg src={product.imageUrl || product.cutoutUrl} width={400} alt="" loading="lazy" />
             </div>
             <div className="product-info">
               {/* 전부 MCM이라 브랜드 뱃지는 무의미 — 카테고리 뱃지로 (팀 확정) */}
@@ -327,7 +328,7 @@ export function ProductDetailPage() {
         <div className="detail-image-panel">
           <div className="detail-carousel" ref={carouselRef} onScroll={handleCarouselScroll}>
             {carouselImages.map((src, i) => (
-              <FadeImg key={i} src={productThumb(assetUrl(src), 800)} alt={`${product.name} ${i + 1}`} loading={i === 0 ? 'eager' : 'lazy'} />
+              <ProductImg key={i} src={src} width={800} tone="studio" alt={`${product.name} ${i + 1}`} loading={i === 0 ? 'eager' : 'lazy'} />
             ))}
           </div>
           {carouselImages.length > 1 && (
@@ -395,7 +396,7 @@ export function WishlistPage() {
         )}
         {wishlist.map((product) => (
           <Link className="recommendation-row" key={product.id} to={`/products/${product.id}`}>
-            <div className="recommendation-thumb"><FadeImg src={productThumb(assetUrl(product.imageUrl || product.cutoutUrl), 240)} alt="" /></div>
+            <div className="recommendation-thumb"><ProductImg src={product.imageUrl || product.cutoutUrl} width={240} alt="" /></div>
             <div className="recommendation-details">
               <p>{product.name}</p>
               <small>{productCategory(product)}</small>
@@ -467,7 +468,7 @@ export function RecommendationsPage() {
         )}
         {products.map((product) => (
           <Link className="recommendation-row" key={product.id} to={`/products/${product.id}`}>
-            <div className="recommendation-thumb"><FadeImg src={productThumb(assetUrl(product.imageUrl), 240)} alt="" /></div>
+            <div className="recommendation-thumb"><ProductImg src={product.imageUrl} width={240} alt="" /></div>
             <div className="recommendation-details">
               <p>{product.name}</p>
               <small>{product.subtitle}</small>

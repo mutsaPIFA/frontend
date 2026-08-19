@@ -5,6 +5,7 @@ import BackButton from '../components/BackButton.jsx'
 import BottomNav from '../components/BottomNav.jsx'
 import FadeImg from '../components/FadeImg.jsx'
 import ItemInfoModal from '../components/ItemInfoModal.jsx'
+import ProductImg from '../components/ProductImg.jsx'
 import ReasonText from '../components/ReasonText.jsx'
 import { invalidateApiCache, useApi } from '../hooks/useApi.js'
 import { formatWornDate, scanItemName } from '../lib/format.js'
@@ -227,7 +228,7 @@ export function StyleLogDetailPage() {
           ))}
           {product && (
             <button key="mcm" className="used-item-thumb used-item-thumb-mcm" type="button" onClick={() => product.id && navigate(`/products/${product.id}`)}>
-              <FadeImg src={assetUrl(product.cutoutUrl || product.imageUrl)} alt={product.name} />
+              <ProductImg src={product.cutoutUrl || product.imageUrl} width={480} alt={product.name} />
               <em>MCM</em>
               <small>{product.name}</small>
             </button>

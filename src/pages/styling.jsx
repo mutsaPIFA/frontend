@@ -6,6 +6,7 @@ import BottomNav from '../components/BottomNav.jsx'
 import FadeImg from '../components/FadeImg.jsx'
 import ItemInfoModal from '../components/ItemInfoModal.jsx'
 import LoadingOverlay from '../components/LoadingOverlay.jsx'
+import ProductImg from '../components/ProductImg.jsx'
 import ReasonText from '../components/ReasonText.jsx'
 import { invalidateApiCache, useApi } from '../hooks/useApi.js'
 import { scanItemName } from '../lib/format.js'
@@ -219,7 +220,7 @@ export function OutfitDetailPage() {
           ))}
           {outfit.mcmProduct && (
             <button key="mcm" className="used-item-thumb used-item-thumb-mcm" type="button" onClick={() => outfit.mcmProduct.id && navigate(`/products/${outfit.mcmProduct.id}`)}>
-              <FadeImg src={assetUrl(outfit.mcmProduct.cutoutUrl || outfit.mcmProduct.imageUrl)} alt={outfit.mcmProduct.name} />
+              <ProductImg src={outfit.mcmProduct.cutoutUrl || outfit.mcmProduct.imageUrl} width={480} alt={outfit.mcmProduct.name} />
               <em>MCM</em>
               <small>{outfit.mcmProduct.name}</small>
             </button>
