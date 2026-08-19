@@ -309,6 +309,8 @@ export function RecognizeResultPage() {
   const scanResult = useMemo(() => stylingSession.scanResult(), [])
   const [tags, setTags] = useState(scanResult?.tags || {})
   const [name, setName] = useState(scanResult?.name || '')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
   useEffect(() => {
     if (!scanResult) navigate('/closet/scan', { replace: true })
@@ -325,6 +327,36 @@ export function RecognizeResultPage() {
   function updateName(value) {
     setName(value)
     stylingSession.updateScanName(value)
+  }
+
+  // 등록은 사용자 행동(버튼)에 붙인다 — 화면 렌더 부수효과로 두면 StrictMode·재방문에서 중복 등록된다
+  async function addToCloset() {
+    setIsSubmitting(true)
+    setSubmitError('')
+    try {
+      await apiRequest('/api/v1/closet-items', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: name.trim() || undefined, // 계약 §3-2 — 비워두면 태그 조합 이름
+          source: 'OWN',
+          category: tags?.category,
+          color: tags?.color,
+          material: tags?.material,
+          mood: tags?.mood,
+          imageUrl: scanResult.originalUrl,
+          cutoutUrl: scanResult.cutoutUrl,
+        }),
+      })
+      // 옷장이 늘었다 — 옷장·DNA·추천 화면 캐시 무효화
+      invalidateApiCache('closet:')
+      invalidateApiCache('dna:')
+      invalidateApiCache('recommendations:')
+      navigate('/closet/scan/recognize/complete')
+    } catch (requestError) {
+      setSubmitError(requestError.message)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (!scanResult) return null
@@ -367,9 +399,10 @@ export function RecognizeResultPage() {
         ))}
       </section>
 
+      {submitError && <p className="recognize-error" role="alert">{submitError}</p>}
       <div className="recognize-actions">
-        <button type="button" onClick={() => navigate('/closet/scan')}><strong>다시 스캔하기</strong></button>
-        <button type="button" onClick={() => navigate('/closet/scan/recognize/complete')}><strong>옷장에 넣기</strong></button>
+        <button type="button" onClick={() => navigate('/closet/scan')} disabled={isSubmitting}><strong>다시 스캔하기</strong></button>
+        <button type="button" onClick={addToCloset} disabled={isSubmitting}><strong>{isSubmitting ? '저장 중...' : '옷장에 넣기'}</strong></button>
       </div>
 
       <BottomNav active="closet" />
@@ -379,36 +412,13 @@ export function RecognizeResultPage() {
 
 export function ClosetAddCompletePage() {
   const navigate = useNavigate()
-  const [error, setError] = useState('')
   const scanResult = useMemo(() => stylingSession.scanResult(), [])
   const itemName = scanResult?.name?.trim() || scanItemName(scanResult?.tags)
   const itemImage = assetUrl(scanResult?.cutoutUrl || scanResult?.originalUrl)
 
+  // 표시 전용 화면 — 등록은 인식 화면의 "옷장에 넣기" 버튼이 이미 끝냈다 (중복 등록 방지)
   useEffect(() => {
-    if (!scanResult) {
-      navigate('/closet/scan')
-      return
-    }
-
-    const request = {
-      name: scanResult.name?.trim() || undefined, // 계약 §3-2 — 비워두면 태그 조합 이름
-      source: 'OWN',
-      category: scanResult.tags?.category,
-      color: scanResult.tags?.color,
-      material: scanResult.tags?.material,
-      mood: scanResult.tags?.mood,
-      imageUrl: scanResult.originalUrl,
-      cutoutUrl: scanResult.cutoutUrl,
-    }
-
-    apiRequest('/api/v1/closet-items', { method: 'POST', body: JSON.stringify(request) })
-      .then(() => {
-        // 옷장이 늘었다 — 옷장·DNA·추천 화면 캐시 무효화
-        invalidateApiCache('closet:')
-        invalidateApiCache('dna:')
-        invalidateApiCache('recommendations:')
-      })
-      .catch((requestError) => setError(requestError.message))
+    if (!scanResult) navigate('/closet/scan')
   }, [navigate, scanResult])
 
   return (
@@ -420,7 +430,6 @@ export function ClosetAddCompletePage() {
           <p className="closet-add-complete-english">ADDED TO YOUR CLOSET</p>
           <p className="closet-add-complete-item">{itemName}가<br />내 옷장에 들어왔어요</p>
         </div>
-        {error && <p className="closet-add-complete-error" role="alert">{error}</p>}
       </section>
 
       <button className="closet-add-complete-button" type="button" onClick={() => navigate('/closet')}>

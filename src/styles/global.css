@@ -308,6 +308,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .recognize-name-field input { min-height: 44px; width: min(78%, 300px); padding: 8px 26px; border: 0; border-radius: 30px; outline: 0; background: #f6f1e6; color: #5d4a33; font: inherit; font-size: 17px; font-weight: 600; line-height: 24px; text-align: center; }
 .recognize-name-field input::placeholder { color: #b09a7c; opacity: 1; }
 .recognize-name-field input:focus { box-shadow: 0 0 0 2px rgba(139, 107, 71, 0.35); }
+.recognize-error { margin: 8px 20px 0; color: #b04636; font-size: 12.5px; text-align: center; }
 .recognize-actions { display: flex; gap: 10px; width: calc(100% - 40px); margin: 18px auto 0; }
 .recognize-actions button { display: flex; flex: 1; height: 52px; align-items: center; justify-content: center; border: 0; border-radius: 16px; cursor: pointer; font: inherit; }
 .recognize-actions button:first-child { border: 1px solid #e2dccd; color: #724c25; background: #fff; }
