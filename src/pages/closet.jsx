@@ -308,6 +308,7 @@ export function RecognizeResultPage() {
   const navigate = useNavigate()
   const scanResult = useMemo(() => stylingSession.scanResult(), [])
   const [tags, setTags] = useState(scanResult?.tags || {})
+  const [name, setName] = useState(scanResult?.name || '')
 
   useEffect(() => {
     if (!scanResult) navigate('/closet/scan', { replace: true })
@@ -318,6 +319,12 @@ export function RecognizeResultPage() {
     const nextTags = { ...tags, [key]: value }
     setTags(nextTags)
     stylingSession.updateScanTags(nextTags)
+  }
+
+  // 명칭도 여기서 정할 수 있다 (계약 §3-2 name) — 비워두면 태그 조합 이름
+  function updateName(value) {
+    setName(value)
+    stylingSession.updateScanName(value)
   }
 
   if (!scanResult) return null
@@ -335,10 +342,19 @@ export function RecognizeResultPage() {
 
       <section className="recognize-item-card">
         <img className="recognize-item-image" src={itemImage} alt={itemName} />
-        <div className="recognize-item-name">{itemName}</div>
+        <label className="recognize-name-field">
+          <span className="sr-only">아이템 이름</span>
+          <input
+            value={name}
+            onChange={(event) => updateName(event.target.value)}
+            placeholder={itemName}
+            maxLength={30}
+            aria-label="아이템 이름 (비워두면 자동 이름)"
+          />
+        </label>
       </section>
 
-      <p className="recognize-tags-hint">태그가 다르면 탭해서 바꿀 수 있어요</p>
+      <p className="recognize-tags-hint">이름과 태그를 탭해서 바꿀 수 있어요</p>
       <section className="recognize-tags" aria-label="인식된 태그 확인·수정">
         {[['category', '종류'], ['color', '색상'], ['material', '소재'], ['mood', '무드']].map(([key, label]) => (
           <label key={key}>
@@ -365,7 +381,7 @@ export function ClosetAddCompletePage() {
   const navigate = useNavigate()
   const [error, setError] = useState('')
   const scanResult = useMemo(() => stylingSession.scanResult(), [])
-  const itemName = scanItemName(scanResult?.tags)
+  const itemName = scanResult?.name?.trim() || scanItemName(scanResult?.tags)
   const itemImage = assetUrl(scanResult?.cutoutUrl || scanResult?.originalUrl)
 
   useEffect(() => {
@@ -375,6 +391,7 @@ export function ClosetAddCompletePage() {
     }
 
     const request = {
+      name: scanResult.name?.trim() || undefined, // 계약 §3-2 — 비워두면 태그 조합 이름
       source: 'OWN',
       category: scanResult.tags?.category,
       color: scanResult.tags?.color,
