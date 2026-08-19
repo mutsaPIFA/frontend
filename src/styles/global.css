@@ -126,6 +126,15 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .category-tabs button { height: 33px; flex: 1; padding: 0; border: 0; border-radius: 30px; color: #000; background: transparent; cursor: pointer; font: inherit; font-size: 14px; white-space: nowrap; }
 .category-tabs button.active { color: #fff; background: #cfb8a1; }
 
+/* 찜 실패 안내 — 조용한 원복 대신 이유를 잠깐 보여준다 (3초 후 자동 소멸) */
+.wish-error { margin: 4px 20px 0; color: #a4442e; font-size: 12.5px; text-align: center; }
+
+/* 탭 아래 서브 필터 칩 — 옷장 카테고리 칩과 같은 문법(독립 알약 + 가로 스크롤), 한 단계 작게 */
+.category-subtabs { display: flex; align-items: center; gap: 7px; margin-top: 10px; padding: 2px 18px; overflow-x: auto; scrollbar-width: none; }
+.category-subtabs::-webkit-scrollbar { display: none; }
+.category-subtabs button { height: 30px; flex: 0 0 auto; padding: 0 13px; border: 0; border-radius: 30px; color: #6d5c48; background: #f4f1ea; cursor: pointer; font: inherit; font-size: 12.5px; white-space: nowrap; transition: background 0.2s ease, color 0.2s ease; }
+.category-subtabs button.active { color: #fff; background: #b99a76; }
+
 .product-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 21px 19px; padding: 17px 18px 0; }
 .product-card { min-width: 0; overflow: hidden; border-radius: 15px; background: #fff; }
 .product-card-clickable { cursor: pointer; outline: none; }
@@ -170,8 +179,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .closet-delete-button img { width: 42px; height: 42px; }
 .closet-delete-button:disabled { cursor: not-allowed; opacity: 0.7; }
 
-.closet-tabs { display: flex; width: 125px; height: 42px; align-items: center; gap: 0; margin: 17px 0 16px 22px; padding: 4px 5px; border-radius: 30px; background: #eceae6; }
-.closet-tabs button { height: 33px; flex: 1; padding: 0; border: 0; border-radius: 30px; color: #000; background: transparent; cursor: pointer; font: inherit; font-size: 14px; }
+/* 카테고리 칩 행 — 개수가 변하므로 칩 각각이 독립 알약 + 행 가로 스크롤 (컨테이너 알약에 넣으면 잘릴 때 삐져나온다) */
+.closet-tabs { display: flex; align-items: center; gap: 8px; margin: 17px 0 16px; padding: 2px 22px; overflow-x: auto; scrollbar-width: none; }
+.closet-tabs::-webkit-scrollbar { display: none; }
+.closet-tabs button { height: 36px; flex: 0 0 auto; padding: 0 16px; border: 0; border-radius: 30px; color: #27231f; background: #eceae6; cursor: pointer; font: inherit; font-size: 14px; white-space: nowrap; transition: background 0.2s ease, color 0.2s ease; }
 .closet-tabs button.active { color: #fff; background: #cfb8a1; }
 
 .closet-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 19px; padding: 0 20px; }
@@ -597,6 +608,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 .login-form input::placeholder { color: #9e7143; opacity: 1; }
 .login-form input:focus { box-shadow: 0 0 0 2px rgba(91, 106, 57, 0.35); }
+
+/* 비밀번호 보이기 토글 — 입력칸 오른쪽 안쪽에 눈 아이콘 */
+.password-field { position: relative; }
+.password-field input { padding-right: 52px; }
+.password-toggle { position: absolute; top: 27px; right: 34px; display: grid; width: 32px; height: 32px; place-items: center; padding: 0; border: 0; color: #9e7143; background: transparent; cursor: pointer; transform: translateY(-50%); }
+.password-toggle:focus-visible { border-radius: 50%; box-shadow: 0 0 0 2px rgba(91, 106, 57, 0.35); }
 
 .login-submit {
   display: flex;

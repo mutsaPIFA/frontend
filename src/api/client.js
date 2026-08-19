@@ -75,6 +75,8 @@ export async function apiRequest(path, options = {}) {
     throw new Error(message)
   }
 
-  if (response.status === 204) return null
-  return response.json()
+  // 성공이어도 본문이 없을 수 있다 (204 삭제, 201 빈 본문 — 찜 추가 등) — 빈 본문을 JSON 파싱하면 throw 되어
+  // 성공한 요청이 실패로 둔갑한다(찜 하트가 되돌아가던 버그의 뿌리)
+  const text = await response.text()
+  return text ? JSON.parse(text) : null
 }

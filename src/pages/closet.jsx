@@ -7,30 +7,28 @@ import FadeImg from '../components/FadeImg.jsx'
 import ItemInfoModal from '../components/ItemInfoModal.jsx'
 import LoadingOverlay from '../components/LoadingOverlay.jsx'
 import { invalidateApiCache, useApi } from '../hooks/useApi.js'
-import { closetItemImage, itemDisplayName, scanItemName } from '../lib/format.js'
+import { closetItemImage, itemDisplayName, productThumb, scanItemName } from '../lib/format.js'
 import { tagColorHex, tagOptions } from '../lib/vocab.js'
 import { stylingSession } from '../lib/stylingSession.js'
 
 export function ClosetPage() {
   const navigate = useNavigate()
-  const [source, setSource] = useState('OWN')
+  const [category, setCategory] = useState('전체')
   const [isSelecting, setIsSelecting] = useState(false)
   const [selectedIds, setSelectedIds] = useState([])
   const [viewItem, setViewItem] = useState(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [deleteError, setDeleteError] = useState('')
 
+  // 전체를 한 번에 받아 클라에서 카테고리 필터 — 탭을 오가도 선택(selectedIds)이 유지된다
   const { data, setData, isLoading, error: loadError, reload } = useApi(async () => {
-    const result = await apiRequest(`/api/v1/closet-items?source=${source}`)
+    const result = await apiRequest('/api/v1/closet-items')
     return Array.isArray(result) ? result : []
-  }, [source], { cacheKey: `closet:${source}` })
+  }, [], { cacheKey: 'closet:all' })
 
-  const items = data || []
-
-  function switchSource(next) {
-    setSource(next)
-    setSelectedIds([])
-  }
+  const allItems = data || []
+  const categories = ['전체', ...tagOptions.category.filter((option) => allItems.some((item) => item.category === option))]
+  const items = category === '전체' ? allItems : allItems.filter((item) => item.category === category)
 
   // 기본 모드: 탭 = 옷 정보 보기 / 선택 모드: 탭 = 선택 토글
   function handleCardTap(item) {
@@ -86,9 +84,10 @@ export function ClosetPage() {
         )}
       </header>
 
-      <div className="closet-tabs" role="tablist" aria-label="옷장 출처">
-        <button className={source === 'OWN' ? 'active' : ''} type="button" onClick={() => switchSource('OWN')} role="tab" aria-selected={source === 'OWN'}>OWN</button>
-        <button className={source === 'MCM' ? 'active' : ''} type="button" onClick={() => switchSource('MCM')} role="tab" aria-selected={source === 'MCM'}>MCM</button>
+      <div className="closet-tabs" role="tablist" aria-label="옷장 카테고리">
+        {categories.map((option) => (
+          <button key={option} className={category === option ? 'active' : ''} type="button" onClick={() => setCategory(option)} role="tab" aria-selected={category === option}>{option}</button>
+        ))}
       </div>
 
       <section className="closet-grid" aria-label="내 옷장 아이템">
@@ -507,7 +506,7 @@ export function StyleDnaPage() {
                     }}
                   >
                     <span className="perfect-match">{index === 0 ? 'PERFECT MATCH' : `MATCH ${index + 1}`}</span>
-                    <FadeImg className="recommendation-image" src={assetUrl(pick.product.imageUrl)} alt={pick.product.name} />
+                    <FadeImg className="recommendation-image" src={productThumb(assetUrl(pick.product.imageUrl), 480)} alt={pick.product.name} />
                     <p>{pick.product.name}</p>
                     <div className="recommendation-reason">
                       <div className="recommendation-reason-copy">
