@@ -12,9 +12,17 @@ import { closetItemImage, itemDisplayName, scanItemName } from '../lib/format.js
 import { tagColorHex, tagOptions } from '../lib/vocab.js'
 import { stylingSession } from '../lib/stylingSession.js'
 
+// 옷장 대분류 — 표시 계층의 묶음일 뿐, 저장·AI 어휘는 기존 7개 category 그대로다
+const CLOSET_GROUPS = {
+  옷: ['상의', '하의', '아우터', '원피스', '신발'],
+  가방: ['가방'],
+  악세서리: ['악세서리'],
+}
+
 export function ClosetPage() {
   const navigate = useNavigate()
-  const [category, setCategory] = useState('전체')
+  const [group, setGroup] = useState('전체')
+  const [subCategory, setSubCategory] = useState('전체')
   const [isSelecting, setIsSelecting] = useState(false)
   const [selectedIds, setSelectedIds] = useState([])
   const [viewItem, setViewItem] = useState(null)
@@ -28,8 +36,19 @@ export function ClosetPage() {
   }, [], { cacheKey: 'closet:all' })
 
   const allItems = data || []
-  const categories = ['전체', ...tagOptions.category.filter((option) => allItems.some((item) => item.category === option))]
-  const items = category === '전체' ? allItems : allItems.filter((item) => item.category === category)
+  const ownedCategories = new Set(allItems.map((item) => item.category))
+  const groups = ['전체', ...Object.keys(CLOSET_GROUPS).filter((name) => CLOSET_GROUPS[name].some((c) => ownedCategories.has(c)))]
+  const subOptions = group === '옷' ? CLOSET_GROUPS.옷.filter((c) => ownedCategories.has(c)) : []
+  const items = allItems.filter((item) => {
+    if (group === '전체') return true
+    if (!CLOSET_GROUPS[group]?.includes(item.category)) return false
+    return subCategory === '전체' || item.category === subCategory
+  })
+
+  function switchGroup(next) {
+    setGroup(next)
+    setSubCategory('전체')
+  }
 
   // 기본 모드: 탭 = 옷 정보 보기 / 선택 모드: 탭 = 선택 토글
   function handleCardTap(item) {
@@ -85,11 +104,19 @@ export function ClosetPage() {
         )}
       </header>
 
-      <div className="closet-tabs" role="tablist" aria-label="옷장 카테고리">
-        {categories.map((option) => (
-          <button key={option} className={category === option ? 'active' : ''} type="button" onClick={() => setCategory(option)} role="tab" aria-selected={category === option}>{option}</button>
+      <div className="closet-tabs" role="tablist" aria-label="옷장 분류">
+        {groups.map((option) => (
+          <button key={option} className={group === option ? 'active' : ''} type="button" onClick={() => switchGroup(option)} role="tab" aria-selected={group === option}>{option}</button>
         ))}
       </div>
+      {subOptions.length > 1 && (
+        <div className="category-subtabs closet-subtabs" role="tablist" aria-label="옷 세부 종류">
+          <button className={subCategory === '전체' ? 'active' : ''} type="button" onClick={() => setSubCategory('전체')} role="tab" aria-selected={subCategory === '전체'}>전체</button>
+          {subOptions.map((option) => (
+            <button key={option} className={subCategory === option ? 'active' : ''} type="button" onClick={() => setSubCategory(option)} role="tab" aria-selected={subCategory === option}>{option}</button>
+          ))}
+        </div>
+      )}
 
       <section className="closet-grid" aria-label="내 옷장 아이템">
         {isLoading && <p className="grid-status">옷장을 여는 중이에요...</p>}

@@ -128,8 +128,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .product-search input::placeholder { color: #9e7143; opacity: 1; }
 .filter-button { display: flex; align-items: center; gap: 3px; margin: 4px 28px 7px auto; padding: 0; border: 0; color: #7c7c7c; background: transparent; cursor: pointer; font: inherit; font-size: 14px; }
 .filter-button img { width: 13px; height: 10px; }
-.category-tabs { display: flex; width: calc(100% - 36px); height: 42px; align-items: center; gap: 0; margin: 0 auto; padding: 4px 5px; border-radius: 30px; background: #eceae6; }
-.category-tabs button { height: 33px; flex: 1; padding: 0; border: 0; border-radius: 30px; color: #000; background: transparent; cursor: pointer; font: inherit; font-size: 14px; white-space: nowrap; }
+/* 버튼은 내용 크기 + 남는 공간 균등 분배 — flex:1 균등폭이면 짧은 라벨(ALL) 주변에 여백이 몰려 멀어 보인다 */
+.category-tabs { display: flex; width: calc(100% - 36px); height: 42px; align-items: center; justify-content: space-between; margin: 0 auto; padding: 4px 5px; border-radius: 30px; background: #eceae6; }
+.category-tabs button { height: 33px; flex: 0 1 auto; padding: 0 14px; border: 0; border-radius: 30px; color: #000; background: transparent; cursor: pointer; font: inherit; font-size: 14px; white-space: nowrap; }
 .category-tabs button.active { color: #fff; background: #cfb8a1; }
 
 /* 찜 실패 안내 — 조용한 원복 대신 이유를 잠깐 보여준다 (3초 후 자동 소멸) */
@@ -140,6 +141,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .category-subtabs::-webkit-scrollbar { display: none; }
 .category-subtabs button { height: 30px; flex: 0 0 auto; padding: 0 13px; border: 0; border-radius: 30px; color: #6d5c48; background: #f4f1ea; cursor: pointer; font: inherit; font-size: 12.5px; white-space: nowrap; transition: background 0.2s ease, color 0.2s ease; }
 .category-subtabs button.active { color: #fff; background: #b99a76; }
+/* 옷장의 서브칩 — 대분류 칩과 좌우 정렬 맞춤, 사이 간격 당김 */
+.closet-subtabs { margin: -6px 0 16px; padding: 2px 22px; }
 
 .product-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 21px 19px; padding: 17px 18px 0; }
 .product-card { min-width: 0; overflow: hidden; border-radius: 15px; background: #fff; }
