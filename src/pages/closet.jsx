@@ -7,29 +7,47 @@ import FadeImg from '../components/FadeImg.jsx'
 import ItemInfoModal from '../components/ItemInfoModal.jsx'
 import LoadingOverlay from '../components/LoadingOverlay.jsx'
 import { invalidateApiCache, useApi } from '../hooks/useApi.js'
+import ProductImg from '../components/ProductImg.jsx'
 import { closetItemImage, itemDisplayName, scanItemName } from '../lib/format.js'
 import { tagColorHex, tagOptions } from '../lib/vocab.js'
 import { stylingSession } from '../lib/stylingSession.js'
 
+// 옷장 대분류 — 표시 계층의 묶음일 뿐, 저장·AI 어휘는 기존 7개 category 그대로다
+const CLOSET_GROUPS = {
+  옷: ['상의', '하의', '아우터', '원피스', '신발'],
+  가방: ['가방'],
+  악세서리: ['악세서리'],
+}
+
 export function ClosetPage() {
   const navigate = useNavigate()
-  const [source, setSource] = useState('OWN')
+  const [group, setGroup] = useState('전체')
+  const [subCategory, setSubCategory] = useState('전체')
   const [isSelecting, setIsSelecting] = useState(false)
   const [selectedIds, setSelectedIds] = useState([])
   const [viewItem, setViewItem] = useState(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [deleteError, setDeleteError] = useState('')
 
+  // 전체를 한 번에 받아 클라에서 카테고리 필터 — 탭을 오가도 선택(selectedIds)이 유지된다
   const { data, setData, isLoading, error: loadError, reload } = useApi(async () => {
-    const result = await apiRequest(`/api/v1/closet-items?source=${source}`)
+    const result = await apiRequest('/api/v1/closet-items')
     return Array.isArray(result) ? result : []
-  }, [source], { cacheKey: `closet:${source}` })
+  }, [], { cacheKey: 'closet:all' })
 
-  const items = data || []
+  const allItems = data || []
+  const ownedCategories = new Set(allItems.map((item) => item.category))
+  const groups = ['전체', ...Object.keys(CLOSET_GROUPS).filter((name) => CLOSET_GROUPS[name].some((c) => ownedCategories.has(c)))]
+  const subOptions = group === '옷' ? CLOSET_GROUPS.옷.filter((c) => ownedCategories.has(c)) : []
+  const items = allItems.filter((item) => {
+    if (group === '전체') return true
+    if (!CLOSET_GROUPS[group]?.includes(item.category)) return false
+    return subCategory === '전체' || item.category === subCategory
+  })
 
-  function switchSource(next) {
-    setSource(next)
-    setSelectedIds([])
+  function switchGroup(next) {
+    setGroup(next)
+    setSubCategory('전체')
   }
 
   // 기본 모드: 탭 = 옷 정보 보기 / 선택 모드: 탭 = 선택 토글
@@ -86,10 +104,19 @@ export function ClosetPage() {
         )}
       </header>
 
-      <div className="closet-tabs" role="tablist" aria-label="옷장 출처">
-        <button className={source === 'OWN' ? 'active' : ''} type="button" onClick={() => switchSource('OWN')} role="tab" aria-selected={source === 'OWN'}>OWN</button>
-        <button className={source === 'MCM' ? 'active' : ''} type="button" onClick={() => switchSource('MCM')} role="tab" aria-selected={source === 'MCM'}>MCM</button>
+      <div className="closet-tabs" role="tablist" aria-label="옷장 분류">
+        {groups.map((option) => (
+          <button key={option} className={group === option ? 'active' : ''} type="button" onClick={() => switchGroup(option)} role="tab" aria-selected={group === option}>{option}</button>
+        ))}
       </div>
+      {subOptions.length > 1 && (
+        <div className="category-subtabs closet-subtabs" role="tablist" aria-label="옷 세부 종류">
+          <button className={subCategory === '전체' ? 'active' : ''} type="button" onClick={() => setSubCategory('전체')} role="tab" aria-selected={subCategory === '전체'}>전체</button>
+          {subOptions.map((option) => (
+            <button key={option} className={subCategory === option ? 'active' : ''} type="button" onClick={() => setSubCategory(option)} role="tab" aria-selected={subCategory === option}>{option}</button>
+          ))}
+        </div>
+      )}
 
       <section className="closet-grid" aria-label="내 옷장 아이템">
         {isLoading && <p className="grid-status">옷장을 여는 중이에요...</p>}
@@ -507,7 +534,7 @@ export function StyleDnaPage() {
                     }}
                   >
                     <span className="perfect-match">{index === 0 ? 'PERFECT MATCH' : `MATCH ${index + 1}`}</span>
-                    <FadeImg className="recommendation-image" src={assetUrl(pick.product.imageUrl)} alt={pick.product.name} />
+                    <ProductImg className="recommendation-image" src={pick.product.imageUrl} width={480} alt={pick.product.name} />
                     <p>{pick.product.name}</p>
                     <div className="recommendation-reason">
                       <div className="recommendation-reason-copy">

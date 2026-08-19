@@ -34,3 +34,10 @@ export function itemDisplayName(item) {
 export function closetItemImage(item) {
   return assetUrl(item.cutoutUrl || item.imageUrl)
 }
+
+// MCM 이미지 CDN(Amplience)은 ?w= 로 리사이즈한다 — 시드 URL의 ?sw=(SFCC 문법)는 무시돼
+// 원본 2000px(~128KB)이 그대로 내려온다. 실측: ?w=400 = 6KB. 목록 화면은 반드시 이걸 거칠 것.
+export function productThumb(url, width = 400) {
+  if (!url || !url.includes('images.mcmworldwide.com')) return url
+  return `${url.split('?')[0]}?w=${width}&fmt=auto`
+}

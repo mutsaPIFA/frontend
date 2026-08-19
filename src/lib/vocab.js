@@ -2,9 +2,9 @@
 
 export const categoryOptions = [
   { label: 'ALL', value: '' },
+  { label: 'CLOTHES', value: 'clothes' },
   { label: 'BAGS', value: '가방' },
   { label: 'ACCESSORIES', value: '악세서리' },
-  { label: 'CLOTHES', value: 'clothes' },
 ]
 
 // 스캔 태그 수정 옵션 (계약 §3-1: 태그는 사용자 수정 가능)

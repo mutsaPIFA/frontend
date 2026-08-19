@@ -6,6 +6,38 @@ import { clearApiCache } from '../hooks/useApi.js'
 const splashPuppyImage = '/assets/splash-puppy.png'
 const loginRequestPuppyImage = '/assets/login-request-puppy.png'
 
+// 비밀번호 입력 + 보이기 토글 — 로그인·회원가입 공용
+function PasswordInput({ id, name, placeholder, autoComplete, value, onChange }) {
+  const [isVisible, setIsVisible] = useState(false)
+  return (
+    <div className="password-field">
+      <input
+        id={id}
+        name={name}
+        type={isVisible ? 'text' : 'password'}
+        autoComplete={autoComplete}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        required
+      />
+      <button
+        className="password-toggle"
+        type="button"
+        aria-label={isVisible ? '비밀번호 숨기기' : '비밀번호 보기'}
+        aria-pressed={isVisible}
+        onClick={() => setIsVisible((current) => !current)}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z" />
+          <circle cx="12" cy="12" r="2.6" />
+          {!isVisible && <line x1="4.5" y1="4.5" x2="19.5" y2="19.5" />}
+        </svg>
+      </button>
+    </div>
+  )
+}
+
 export function SplashPage() {
   return (
     <main className="splash-screen" data-node-id="0">
@@ -91,16 +123,13 @@ export function LoginPage() {
             data-node-id="66:18"
           />
           <label className="sr-only" htmlFor="password">비밀번호</label>
-          <input
+          <PasswordInput
             id="password"
             name="password"
-            type="password"
             autoComplete="current-password"
             placeholder="비밀번호"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            required
-            data-node-id="66:20"
           />
           {error && <p className="login-error" role="alert">{error}</p>}
           <button className="login-submit" type="submit" disabled={isSubmitting} data-node-id="210:2">
@@ -164,7 +193,7 @@ export function SignupPage() {
           <label className="sr-only" htmlFor="signup-email">이메일 주소</label>
           <input id="signup-email" name="email" type="email" placeholder="이메일 주소*" value={form.email} onChange={updateField} required />
           <label className="sr-only" htmlFor="signup-password">비밀번호</label>
-          <input id="signup-password" name="password" type="password" placeholder="비밀번호*" value={form.password} onChange={updateField} required />
+          <PasswordInput id="signup-password" name="password" autoComplete="new-password" placeholder="비밀번호*" value={form.password} onChange={updateField} />
 
           <p className="signup-required-note">*표시가 있는 모든 항목은 필수입니다.</p>
           {error && <p className="signup-error" role="alert">{error}</p>}

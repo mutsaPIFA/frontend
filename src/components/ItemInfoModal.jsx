@@ -3,7 +3,7 @@ import { apiRequest, assetUrl } from '../api/client.js'
 import { invalidateApiCache } from '../hooks/useApi.js'
 import { itemDisplayName } from '../lib/format.js'
 import { tagOptions } from '../lib/vocab.js'
-import FadeImg from './FadeImg.jsx'
+import ProductImg from './ProductImg.jsx'
 
 // 내 옷 정보 — 옷장 카드·코디 사용 아이템 탭 시 공용.
 // editable이면 명칭·태그 수정 가능 (계약 §3-6 PATCH /closet-items/{id})
@@ -95,7 +95,7 @@ export default function ItemInfoModal({ item, editable = false, onClose, onSaved
     <div className="item-modal-layer" role="presentation" onClick={close}>
       <section className="item-modal" role="dialog" aria-modal="true" aria-label="아이템 정보" onClick={(event) => event.stopPropagation()}>
         <div className="item-modal-image">
-          <FadeImg src={assetUrl(item.cutoutUrl || item.imageUrl)} alt="" />
+          <ProductImg src={item.cutoutUrl || item.imageUrl} width={600} alt="" />
         </div>
 
         {!isEditing && (

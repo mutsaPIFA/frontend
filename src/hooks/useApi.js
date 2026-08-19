@@ -3,6 +3,10 @@ import { useCallback, useEffect, useState } from 'react'
 // 세션 메모리 캐시 — 한 번 본 화면은 재방문 시 즉시 그리고, 뒤에서 갱신한다(stale-while-revalidate).
 const cache = new Map()
 
+// 낙관적 갱신(setData) 횟수 — 갱신 이전에 출발한 fetch가 늦게 도착해 새 상태를 덮어쓰는 경합 방지.
+// (예: 화면 진입 재검증 중 찜 하트를 누르면, 늦게 온 이전 목록이 하트를 원위치시키던 버그)
+const mutationVersions = new Map()
+
 // 로그인/로그아웃 시 호출 — 다른 계정의 데이터가 보이면 안 된다
 export function clearApiCache() {
   cache.clear()
@@ -35,9 +39,15 @@ export function useApi(fetcher, deps = [], { cacheKey } = {}) {
       setIsLoading(true)
     }
     setError('')
+    const versionAtStart = cacheKey !== undefined ? mutationVersions.get(cacheKey) || 0 : 0
     Promise.resolve()
       .then(fetcher)
       .then((result) => {
+        // fetch 중에 setData(낙관적 갱신)가 있었다면 이 응답은 낡았다 — 버린다
+        if (cacheKey !== undefined && (mutationVersions.get(cacheKey) || 0) !== versionAtStart) {
+          if (alive) setIsLoading(false)
+          return
+        }
         if (cacheKey !== undefined) cache.set(cacheKey, result)
         if (alive) {
           setDataState(result)
@@ -60,6 +70,7 @@ export function useApi(fetcher, deps = [], { cacheKey } = {}) {
   }, [...deps, reloadToken])
 
   const setData = useCallback((updater) => {
+    if (cacheKey !== undefined) mutationVersions.set(cacheKey, (mutationVersions.get(cacheKey) || 0) + 1)
     setDataState((current) => {
       const next = typeof updater === 'function' ? updater(current) : updater
       if (cacheKey !== undefined) cache.set(cacheKey, next)

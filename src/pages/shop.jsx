@@ -4,6 +4,7 @@ import { apiRequest, assetUrl } from '../api/client.js'
 import BackButton from '../components/BackButton.jsx'
 import BottomNav from '../components/BottomNav.jsx'
 import FadeImg from '../components/FadeImg.jsx'
+import ProductImg from '../components/ProductImg.jsx'
 import { invalidateApiCache, useApi } from '../hooks/useApi.js'
 import { formatPrice, formatSize } from '../lib/format.js'
 import { categoryOptions, tagColorHex } from '../lib/vocab.js'
@@ -17,39 +18,94 @@ function productCategory(product) {
   return 'CLOTHES'
 }
 
+// 탭별 서브 필터 — 가방·악세서리는 상품명 키워드(MCM 명명 규칙이 일관적), 의류는 실제 category 필드.
+// 키워드에 안 걸리는 상품은 '전체'에서만 보인다 — 정식 서브카테고리 필드는 백로그(재크롤링 검토).
+const SUB_FILTERS = {
+  가방: [
+    { label: '백팩', keywords: ['백팩', 'backpack'] },
+    { label: '숄더', keywords: ['숄더', '호보', '메신저', 'shoulder', 'hobo', 'messenger'] },
+    { label: '토트', keywords: ['토트', '쇼퍼', 'tote', 'shopper'] },
+    { label: '크로스', keywords: ['크로스', '벨트 백', '벨트백', 'crossbody'] },
+    { label: '파우치 · 미니', keywords: ['파우치', '미니백', '클러치', '베니티', '드로우스트링', 'pouch', 'clutch', 'vanity', 'drawstring'] },
+    { label: '트래블', keywords: ['트롤리', '캐빈', '체크인', '더플', '위켄더', '보스턴', '캐리어', '가먼트', 'trolley', 'duffle'] },
+  ],
+  악세서리: [
+    { label: '지갑 · 카드', keywords: ['지갑', '월렛', '카드', 'wallet', 'card'] },
+    { label: '폰 · 테크', keywords: ['아이폰', 'iphone', '에어팟', 'airpods', '폰 케이스', '폰 파우치', '핸드폰', '랜야드', '테크', '노트북', '태블릿', 'watch'] },
+    { label: '스카프 · 모자', keywords: ['스카프', '머플러', '숄', '비니', '캡', '모자', '버킷', '양말', 'scarf', 'shawl', 'beanie'] },
+    { label: '키링 · 참', keywords: ['키 참', '키링', '키 링', '키 홀더', '참', '스트랩', 'charm', 'keyring'] },
+    { label: '벨트', keywords: ['벨트', 'belt'] },
+    { label: '뷰티 · 트래블', keywords: ['퍼퓸', '향수', '선글라스', '아이웨어', '코스메틱', '수트케이스', '트래블', '토일레트리', 'perfume', 'sunglasses'] },
+    { label: '펫 · 토이', keywords: ['펫', '인형', 'pup', '토이'] },
+  ],
+  clothes: [
+    { label: '상의', category: '상의' },
+    { label: '하의', category: '하의' },
+    { label: '아우터', category: '아우터' },
+    { label: '신발', category: '신발' },
+  ],
+}
+
+function matchesSubFilter(product, subFilter) {
+  if (!subFilter) return true
+  if (subFilter.category) return product.category === subFilter.category
+  const name = (product.name || '').toLowerCase()
+  return subFilter.keywords.some((keyword) => name.includes(keyword))
+}
+
 // 찜 상태 공용 훅 (계약 §5-3~5-5) — 하트 상태는 찜 목록 id 집합으로 매칭, 토글은 낙관적 갱신
 function useWishlist() {
   const { data, setData } = useApi(async () => {
     const result = await apiRequest('/api/v1/wishlist')
     return Array.isArray(result) ? result : []
   }, [], { cacheKey: 'wishlist' })
+  const [wishError, setWishError] = useState('')
 
   const wishedIds = new Set((data || []).map((product) => product.id))
 
   async function toggleWish(product) {
     const wished = wishedIds.has(product.id)
+    setWishError('')
     setData((current) => wished
       ? (current || []).filter((item) => item.id !== product.id)
       : [product, ...(current || [])])
     invalidateApiCache('profile')
+    const call = () => apiRequest(`/api/v1/wishlist/${product.id}`, { method: wished ? 'DELETE' : 'POST' })
     try {
-      await apiRequest(`/api/v1/wishlist/${product.id}`, { method: wished ? 'DELETE' : 'POST' })
+      try {
+        await call()
+      } catch {
+        // 일시적 네트워크·프록시 오류는 1회 재시도로 흡수 (백엔드 찜 API는 멱등)
+        await new Promise((resolve) => setTimeout(resolve, 600))
+        await call()
+      }
     } catch {
-      // 실패 시 원상 복구
+      // 재시도까지 실패 — 원상 복구하되, 조용히 되돌리면 버그처럼 보이므로 이유를 보여준다
       setData((current) => wished
         ? [product, ...(current || [])]
         : (current || []).filter((item) => item.id !== product.id))
+      setWishError('찜 처리에 실패했어요. 잠시 후 다시 시도해주세요.')
+      setTimeout(() => setWishError(''), 3000)
     }
   }
 
-  return { wishlist: data || [], wishedIds, toggleWish }
+  return { wishlist: data || [], wishedIds, toggleWish, wishError }
 }
 
 export function ShopPage() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('')
+  const [subLabel, setSubLabel] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
+
+  const subOptions = SUB_FILTERS[category] || []
+  const activeSubFilter = subOptions.find((option) => option.label === subLabel) || null
+
+  function switchCategory(next) {
+    setCategory(next)
+    setSubLabel('')
+  }
 
   // 타이핑마다 API를 쏘지 않게 300ms 디바운스
   useEffect(() => {
@@ -70,12 +126,13 @@ export function ShopPage() {
   const visibleProducts = useMemo(() => {
     let list = products
     if (category === 'clothes') list = products.filter((product) => productCategory(product) === 'CLOTHES')
+    if (activeSubFilter) list = list.filter((product) => matchesSubFilter(product, activeSubFilter))
     // ALL 탭은 id순(시드 순서)이라 같은 시리즈가 연속으로 뜬다 — 고정 해시로 섞어 다양하게
     if (!category && !debouncedQuery.trim()) {
       list = [...list].sort((a, b) => ((a.id * 2654435761) % 4093) - ((b.id * 2654435761) % 4093))
     }
     return list
-  }, [products, category, debouncedQuery])
+  }, [products, category, activeSubFilter, debouncedQuery])
 
   // 589개를 한 번에 그리지 않고 스크롤에 맞춰 20개씩 — 무한 스크롤 체감 + 성능
   const [visibleCount, setVisibleCount] = useState(20)
@@ -83,7 +140,7 @@ export function ShopPage() {
 
   useEffect(() => {
     setVisibleCount(20)
-  }, [category, debouncedQuery])
+  }, [category, subLabel, debouncedQuery])
 
   useEffect(() => {
     const sentinel = sentinelRef.current
@@ -119,7 +176,7 @@ export function ShopPage() {
               key={option.label}
               className={category === option.value ? 'active' : ''}
               type="button"
-              onClick={() => setCategory(option.value)}
+              onClick={() => switchCategory(option.value)}
               role="tab"
               aria-selected={category === option.value}
             >
@@ -127,6 +184,23 @@ export function ShopPage() {
             </button>
           ))}
         </div>
+        {subOptions.length > 0 && (
+          <div className="category-subtabs" role="tablist" aria-label="상품 세부 종류">
+            <button className={subLabel === '' ? 'active' : ''} type="button" onClick={() => setSubLabel('')} role="tab" aria-selected={subLabel === ''}>전체</button>
+            {subOptions.map((option) => (
+              <button
+                key={option.label}
+                className={subLabel === option.label ? 'active' : ''}
+                type="button"
+                onClick={() => setSubLabel(option.label)}
+                role="tab"
+                aria-selected={subLabel === option.label}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="product-grid" aria-label="MCM 상품 목록">
@@ -153,7 +227,7 @@ export function ShopPage() {
             }}
           >
             <div className="product-image-wrap">
-              <FadeImg src={assetUrl(product.cutoutUrl || product.imageUrl)} alt="" loading="lazy" />
+              <ProductImg src={product.imageUrl || product.cutoutUrl} width={400} alt="" loading="lazy" />
             </div>
             <div className="product-info">
               {/* 전부 MCM이라 브랜드 뱃지는 무의미 — 카테고리 뱃지로 (팀 확정) */}
@@ -174,7 +248,7 @@ export function ShopPage() {
 export function ProductDetailPage() {
   const { id = '1' } = useParams()
   const navigate = useNavigate()
-  const { wishedIds, toggleWish } = useWishlist()
+  const { wishedIds, toggleWish, wishError } = useWishlist()
   const [isAddingToCloset, setIsAddingToCloset] = useState(false)
   const [closetMessage, setClosetMessage] = useState('')
   const [imageIndex, setImageIndex] = useState(0)
@@ -241,6 +315,8 @@ export function ProductDetailPage() {
         )}
       </header>
 
+      {wishError && <p className="wish-error" role="alert">{wishError}</p>}
+
       {!product && (
         <div className="grid-status" role={loadError ? 'alert' : 'status'}>
           <p>{loadError || '상품 정보를 불러오고 있어요...'}</p>
@@ -252,7 +328,7 @@ export function ProductDetailPage() {
         <div className="detail-image-panel">
           <div className="detail-carousel" ref={carouselRef} onScroll={handleCarouselScroll}>
             {carouselImages.map((src, i) => (
-              <FadeImg key={i} src={assetUrl(src)} alt={`${product.name} ${i + 1}`} loading={i === 0 ? 'eager' : 'lazy'} />
+              <ProductImg key={i} src={src} width={800} tone="studio" alt={`${product.name} ${i + 1}`} loading={i === 0 ? 'eager' : 'lazy'} />
             ))}
           </div>
           {carouselImages.length > 1 && (
@@ -300,7 +376,7 @@ export function ProductDetailPage() {
 
 export function WishlistPage() {
   const navigate = useNavigate()
-  const { wishlist, toggleWish } = useWishlist()
+  const { wishlist, toggleWish, wishError } = useWishlist()
 
   return (
     <main className="recommendations-screen">
@@ -308,6 +384,8 @@ export function WishlistPage() {
         <BackButton onClick={() => navigate(-1)} />
         <div><strong>찜한 상품</strong><span>MY PICKS</span></div>
       </header>
+
+      {wishError && <p className="wish-error" role="alert">{wishError}</p>}
 
       <section className="recommendation-list wishlist-list" aria-label="찜한 상품">
         {wishlist.length === 0 && (
@@ -318,7 +396,7 @@ export function WishlistPage() {
         )}
         {wishlist.map((product) => (
           <Link className="recommendation-row" key={product.id} to={`/products/${product.id}`}>
-            <div className="recommendation-thumb"><FadeImg src={assetUrl(product.cutoutUrl || product.imageUrl)} alt="" /></div>
+            <div className="recommendation-thumb"><ProductImg src={product.imageUrl || product.cutoutUrl} width={240} alt="" /></div>
             <div className="recommendation-details">
               <p>{product.name}</p>
               <small>{productCategory(product)}</small>
@@ -361,7 +439,7 @@ export function RecommendationsPage() {
         name: item.product?.name,
         subtitle: item.reason,
         price: item.product?.price,
-        imageUrl: item.product?.cutoutUrl || item.product?.imageUrl,
+        imageUrl: item.product?.imageUrl || item.product?.cutoutUrl,
       }))
   }, [], { cacheKey: `recommendations:${dnaIds.join(',')}` })
 
@@ -390,7 +468,7 @@ export function RecommendationsPage() {
         )}
         {products.map((product) => (
           <Link className="recommendation-row" key={product.id} to={`/products/${product.id}`}>
-            <div className="recommendation-thumb"><FadeImg src={assetUrl(product.imageUrl)} alt="" /></div>
+            <div className="recommendation-thumb"><ProductImg src={product.imageUrl} width={240} alt="" /></div>
             <div className="recommendation-details">
               <p>{product.name}</p>
               <small>{product.subtitle}</small>

@@ -11,6 +11,12 @@
   --color-brand: #705c39;
 }
 
+/* ProductImg가 CDN 실사진에만 붙이는 톤 클래스 — 상품컷에 박힌 스튜디오 배경(실측 rgb(247)) 처리 방식.
+   white: 밝기 ×1.035로 배경을 흰색(255)까지 끌어올려 흰 카드와 융합 (제품 픽셀 +3.5%는 체감 없음) — 목록용.
+   studio: 회색을 살리고 이미지 영역을 같은 톤으로 채움 — 제품 상세용. */
+.product-img-white { background: #fff; filter: brightness(1.035); }
+.product-img-studio { background: #f7f7f7; }
+
 * { box-sizing: border-box; }
 
 body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--color-paper); }
@@ -122,17 +128,31 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .product-search input::placeholder { color: #9e7143; opacity: 1; }
 .filter-button { display: flex; align-items: center; gap: 3px; margin: 4px 28px 7px auto; padding: 0; border: 0; color: #7c7c7c; background: transparent; cursor: pointer; font: inherit; font-size: 14px; }
 .filter-button img { width: 13px; height: 10px; }
-.category-tabs { display: flex; width: calc(100% - 36px); height: 42px; align-items: center; gap: 0; margin: 0 auto; padding: 4px 5px; border-radius: 30px; background: #eceae6; }
-.category-tabs button { height: 33px; flex: 1; padding: 0; border: 0; border-radius: 30px; color: #000; background: transparent; cursor: pointer; font: inherit; font-size: 14px; white-space: nowrap; }
+/* 버튼은 내용 크기 + 남는 공간 균등 분배 — flex:1 균등폭이면 짧은 라벨(ALL) 주변에 여백이 몰려 멀어 보인다 */
+.category-tabs { display: flex; width: calc(100% - 36px); height: 42px; align-items: center; justify-content: space-between; margin: 0 auto; padding: 4px 5px; border-radius: 30px; background: #eceae6; }
+.category-tabs button { height: 33px; flex: 0 1 auto; padding: 0 14px; border: 0; border-radius: 30px; color: #000; background: transparent; cursor: pointer; font: inherit; font-size: 14px; white-space: nowrap; }
 .category-tabs button.active { color: #fff; background: #cfb8a1; }
+
+/* 찜 실패 안내 — 조용한 원복 대신 이유를 잠깐 보여준다 (3초 후 자동 소멸) */
+.wish-error { margin: 4px 20px 0; color: #a4442e; font-size: 12.5px; text-align: center; }
+
+/* 탭 아래 서브 필터 칩 — 옷장 카테고리 칩과 같은 문법(독립 알약 + 가로 스크롤), 한 단계 작게 */
+.category-subtabs { display: flex; align-items: center; gap: 7px; margin-top: 10px; padding: 2px 18px; overflow-x: auto; scrollbar-width: none; }
+.category-subtabs::-webkit-scrollbar { display: none; }
+.category-subtabs button { height: 30px; flex: 0 0 auto; padding: 0 13px; border: 0; border-radius: 30px; color: #6d5c48; background: #f4f1ea; cursor: pointer; font: inherit; font-size: 12.5px; white-space: nowrap; transition: background 0.2s ease, color 0.2s ease; }
+.category-subtabs button.active { color: #fff; background: #b99a76; }
+/* 옷장의 서브칩 — 대분류 칩과 좌우 정렬 맞춤, 사이 간격 당김 */
+.closet-subtabs { margin: -6px 0 16px; padding: 2px 22px; }
 
 .product-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 21px 19px; padding: 17px 18px 0; }
 .product-card { min-width: 0; overflow: hidden; border-radius: 15px; background: #fff; }
 .product-card-clickable { cursor: pointer; outline: none; }
 .product-card-clickable:focus-visible { box-shadow: 0 0 0 3px #8b6b47; }
 /* 카드와 같은 흰색으로 통일 — 상품 이미지는 누끼(cutoutUrl) 우선이라 배경 이질감이 없다 */
-.product-image-wrap { position: relative; display: grid; height: 151px; place-items: center; background: #fff; }
-.product-image-wrap > img { width: 70%; height: 88%; object-fit: contain; }
+/* 이미지 박스가 영역과 정확히 일치해야 톤 배경이 경계 없이 영역을 덮는다.
+   (grid place-items는 이미지 고유 비율로 행이 늘어나 height:100%가 범람 — 일반 흐름 + object-fit로 고정) */
+.product-image-wrap { position: relative; overflow: hidden; height: 151px; background: #fff; }
+.product-image-wrap > img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .favorite-button { position: absolute; top: 10px; right: 10px; width: 20px; height: 20px; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .favorite-button img { width: 100%; height: 100%; object-fit: contain; }
 .product-info { min-height: 84px; padding: 9px 10px 8px; }
@@ -170,8 +190,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .closet-delete-button img { width: 42px; height: 42px; }
 .closet-delete-button:disabled { cursor: not-allowed; opacity: 0.7; }
 
-.closet-tabs { display: flex; width: 125px; height: 42px; align-items: center; gap: 0; margin: 17px 0 16px 22px; padding: 4px 5px; border-radius: 30px; background: #eceae6; }
-.closet-tabs button { height: 33px; flex: 1; padding: 0; border: 0; border-radius: 30px; color: #000; background: transparent; cursor: pointer; font: inherit; font-size: 14px; }
+/* 카테고리 칩 행 — 개수가 변하므로 칩 각각이 독립 알약 + 행 가로 스크롤 (컨테이너 알약에 넣으면 잘릴 때 삐져나온다) */
+.closet-tabs { display: flex; align-items: center; gap: 8px; margin: 17px 0 16px; padding: 2px 22px; overflow-x: auto; scrollbar-width: none; }
+.closet-tabs::-webkit-scrollbar { display: none; }
+.closet-tabs button { height: 36px; flex: 0 0 auto; padding: 0 16px; border: 0; border-radius: 30px; color: #27231f; background: #eceae6; cursor: pointer; font: inherit; font-size: 14px; white-space: nowrap; transition: background 0.2s ease, color 0.2s ease; }
 .closet-tabs button.active { color: #fff; background: #cfb8a1; }
 
 .closet-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 19px; padding: 0 20px; }
@@ -320,7 +342,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .recommendation-carousel::-webkit-scrollbar { display: none; }
 .recommendation-card { position: relative; width: calc(100vw - 40px); max-width: 353px; height: 458px; flex: 0 0 calc(100vw - 40px); padding-top: 20px; scroll-snap-align: start; border-radius: 15px; background: #fff; text-align: center; }
 .perfect-match { display: inline-flex; height: 30px; align-items: center; padding: 0 17px; border-radius: 30px; color: #fff; background: #cfb8a1; font-size: 12px; }
-.recommendation-image { display: block; width: 144px; height: 141px; margin: 10px auto 3px; object-fit: contain; }
+.recommendation-image { display: block; width: 144px; height: 141px; margin: 10px auto 3px; border-radius: 12px; object-fit: contain; }
 .recommendation-card > p { margin: 0; font-size: 14px; line-height: 24px; }
 .recommendation-reason { display: flex; min-height: 138px; align-items: center; gap: 10px; margin: 14px 20px 0; padding: 15px 10px 12px 16px; border: 1px solid rgba(207, 184, 161, 0.55); border-radius: 16px; background: #fbf7f1; text-align: left; }
 .recommendation-reason-copy { min-width: 0; flex: 1; align-self: stretch; padding-top: 2px; }
@@ -349,8 +371,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .recommendation-tabs button.active { color: #fff; background: #cfb8a1; }
 .recommendation-list { display: flex; flex-direction: column; gap: 15px; padding: 0 20px; }
 .recommendation-row { position: relative; display: flex; height: 151px; align-items: center; border-radius: 15px; background: #fff; }
-.recommendation-thumb { display: grid; width: 120px; height: 120px; flex: 0 0 120px; place-items: center; margin-left: 18px; border-radius: 15px; background: #fdf9f2; box-shadow: 2px 2px 4px rgba(80, 53, 75, 0.2); }
-.recommendation-thumb img { width: 88%; height: 88%; object-fit: contain; }
+/* 썸네일 타일은 흰색 — 흰색화된 상품컷·투명 누끼 모두 경계 없이 얹힌다 */
+.recommendation-thumb { width: 120px; height: 120px; flex: 0 0 120px; margin-left: 18px; overflow: hidden; border-radius: 15px; background: #fff; box-shadow: 2px 2px 4px rgba(80, 53, 75, 0.2); }
+.recommendation-thumb img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .recommendation-details { min-width: 0; padding: 0 24px 0 19px; }
 .recommendation-details p { margin: 0; overflow: hidden; font-size: 14px; line-height: 24px; text-overflow: ellipsis; white-space: nowrap; }
 .recommendation-details small { display: block; margin-top: 0; overflow: hidden; font-size: 12px; line-height: 24px; text-overflow: ellipsis; white-space: nowrap; }
@@ -366,7 +389,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .detail-header span { font-size: 14px; line-height: 24px; }
 .detail-hero { width: calc(100% - 40px); margin: 17px auto 0; overflow: hidden; border-radius: 15px; background: #fff; }
 /* 상세는 CDN 원본(회색 스튜디오 배경)이라 패널을 같은 회색으로 — 이미지 경계가 사라진다 (목록은 흰색+누끼) */
-.detail-image-panel { display: grid; height: 263px; place-items: center; background: #f6f6f6; }
+.detail-image-panel { display: grid; height: 263px; place-items: center; background: #f7f7f7; }
 .detail-image-panel img { width: 80%; height: 78%; object-fit: contain; }
 .detail-overview { height: 272px; padding: 39px 20px 20px; text-align: center; }
 .detail-overview h1 { margin: 0; font-size: 20px; font-weight: 500; line-height: 24px; letter-spacing: -0.04em; }
@@ -597,6 +620,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 .login-form input::placeholder { color: #9e7143; opacity: 1; }
 .login-form input:focus { box-shadow: 0 0 0 2px rgba(91, 106, 57, 0.35); }
+
+/* 비밀번호 보이기 토글 — 입력칸 오른쪽 안쪽에 눈 아이콘 */
+.password-field { position: relative; }
+.password-field input { padding-right: 52px; }
+.password-toggle { position: absolute; top: 27px; right: 34px; display: grid; width: 32px; height: 32px; place-items: center; padding: 0; border: 0; color: #9e7143; background: transparent; cursor: pointer; transform: translateY(-50%); }
+.password-toggle:focus-visible { border-radius: 50%; box-shadow: 0 0 0 2px rgba(91, 106, 57, 0.35); }
 
 .login-submit {
   display: flex;
