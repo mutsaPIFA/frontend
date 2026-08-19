@@ -303,6 +303,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .recognize-item-card { width: calc(100% - 40px); box-sizing: border-box; margin: 0 auto; padding: 30px 20px 24px; border-radius: 15px; background: #fff; text-align: center; }
 .recognize-item-image { display: block; width: 78%; height: 230px; margin: 0 auto; object-fit: contain; }
 .recognize-item-name { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; margin: 20px auto 0; padding: 8px 26px; border-radius: 30px; background: #f6f1e6; color: #5d4a33; font-size: 17px; font-weight: 600; line-height: 24px; }
+/* 스캔 직후 명칭 입력 — 이름 알약과 같은 시각 문법, 비우면 placeholder(자동 이름)가 보인다 */
+.recognize-name-field { display: block; margin: 20px auto 0; text-align: center; }
+.recognize-name-field input { min-height: 44px; width: min(78%, 300px); padding: 8px 26px; border: 0; border-radius: 30px; outline: 0; background: #f6f1e6; color: #5d4a33; font: inherit; font-size: 17px; font-weight: 600; line-height: 24px; text-align: center; }
+.recognize-name-field input::placeholder { color: #b09a7c; opacity: 1; }
+.recognize-name-field input:focus { box-shadow: 0 0 0 2px rgba(139, 107, 71, 0.35); }
+.recognize-error { margin: 8px 20px 0; color: #b04636; font-size: 12.5px; text-align: center; }
 .recognize-actions { display: flex; gap: 10px; width: calc(100% - 40px); margin: 18px auto 0; }
 .recognize-actions button { display: flex; flex: 1; height: 52px; align-items: center; justify-content: center; border: 0; border-radius: 16px; cursor: pointer; font: inherit; }
 .recognize-actions button:first-child { border: 1px solid #e2dccd; color: #724c25; background: #fff; }
@@ -871,6 +877,8 @@ h1 { margin: 0; font-size: clamp(32px, 7vw, 56px); line-height: 1.12; letter-spa
 .mood-card strong { font-size: 18px; font-weight: 500; line-height: 24px; }
 .mood-card small { margin-top: 2px; font-size: 12px; line-height: 24px; }
 .mood-selection-error { min-height: 18px; margin: 8px 20px -2px; color: #b04636; font-size: 12px; text-align: center; }
+/* 코디 사전 조건 안내 — 생성 실패 대신 부족한 재료를 미리 알려주는 부드러운 배너 */
+.mood-gate-notice { margin: 10px 20px 0; padding: 10px 16px; border-radius: 12px; background: #f6f1e6; color: #6d5c48; font-size: 13px; line-height: 19px; text-align: center; }
 .mood-see-looks-button { display: flex; width: calc(100% - 40px); flex-direction: column; align-items: center; justify-content: center; margin: 22px 20px 0; border: 0; color: #fff; background: #8b6b47; cursor: pointer; font: inherit; }
 .mood-see-looks-button:disabled { cursor: wait; opacity: 0.75; }
 .mood-see-looks-button span { font-size: 20px; font-weight: 500; line-height: 24px; }

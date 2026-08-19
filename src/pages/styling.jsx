@@ -34,6 +34,18 @@ export function MoodSelectionPage() {
     .filter(Boolean)
     .slice(0, 10)
 
+  // 사전 조건 안내 — 생성에 들어갔다 실패하는 대신 부족한 재료를 구체적으로 알려준다 (원피스는 상·하의 겸용)
+  const closetItems = closetData || []
+  const tops = closetItems.filter((item) => item.category === '상의' || item.category === '원피스').length
+  const bottoms = closetItems.filter((item) => item.category === '하의' || item.category === '원피스').length
+  const hasMcm = closetItems.some((item) => item.source === 'MCM' && item.mcmProductId)
+  const gateMessage = closetData === null ? ''
+    : closetItems.length === 0 ? '코디를 만들려면 먼저 옷장을 채워야 해요. 스캔으로 시작해볼까요?'
+    : tops === 0 ? '코디를 만들려면 옷장에 상의가 있어야 해요.'
+    : bottoms === 0 ? '코디를 만들려면 옷장에 하의가 있어야 해요.'
+    : !hasMcm ? '코디를 만들려면 옷장에 MCM 제품이 있어야 합니다. 샵에서 저장해보세요.'
+    : ''
+
   async function handleSeeLooks() {
     if (!selectedMoodId) {
       setError('오늘의 무드를 선택해 주세요.')
@@ -94,8 +106,9 @@ export function MoodSelectionPage() {
         ))}
       </section>
 
+      {gateMessage && <p className="mood-gate-notice" role="status">{gateMessage}</p>}
       {error && <p className="mood-selection-error" role="alert">{error}</p>}
-      <button className="mood-see-looks-button" type="button" onClick={handleSeeLooks} disabled={isCreating}>
+      <button className="mood-see-looks-button" type="button" onClick={handleSeeLooks} disabled={isCreating || !!gateMessage}>
         <span>{isCreating ? '코디를 만들고 있어요' : '추천 코디 보기'}</span>
       </button>
 

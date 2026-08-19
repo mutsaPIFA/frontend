@@ -60,6 +60,11 @@ export const stylingSession = {
     const result = this.scanResult()
     if (result) this.setScanResult({ ...result, tags })
   },
+  // 스캔 직후 사용자가 정한 명칭 (계약 §3-2 name) — 빈 값이면 태그 조합 표시
+  updateScanName(name) {
+    const result = this.scanResult()
+    if (result) this.setScanResult({ ...result, name })
+  },
 
   // DNA 분석에 쓸 아이템 (옷장에서 선택; 비어 있으면 화면이 옷장 전체로 폴백)
   dnaItemIds: () => {
