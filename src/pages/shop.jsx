@@ -391,7 +391,7 @@ export function WishlistPage() {
         {wishlist.length === 0 && (
           <div className="grid-status">
             <p>아직 찜한 상품이 없어요.<br />샵에서 마음에 드는 MCM에 하트를 눌러보세요.</p>
-            <button className="retry-button" type="button" onClick={() => navigate('/')}>샵 구경가기</button>
+            <button className="retry-button" type="button" onClick={() => navigate('/shop')}>샵 구경가기</button>
           </div>
         )}
         {wishlist.map((product) => (
