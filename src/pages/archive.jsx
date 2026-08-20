@@ -227,7 +227,7 @@ export function StyleLogDetailPage() {
             </button>
           ))}
           {product && (
-            <button key="mcm" className="used-item-thumb used-item-thumb-mcm" type="button" onClick={() => product.id && navigate(`/products/${product.id}`)}>
+            <button key="mcm" className="used-item-thumb used-item-thumb-mcm" type="button" onClick={() => setViewItem({ ...product, source: 'MCM' })}>
               <ProductImg src={product.cutoutUrl || product.imageUrl} width={480} alt={product.name} />
               <em>MCM</em>
               <small>{product.name}</small>

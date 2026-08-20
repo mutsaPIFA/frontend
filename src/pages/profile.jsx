@@ -5,6 +5,20 @@ import BottomNav from '../components/BottomNav.jsx'
 import { clearApiCache, invalidateApiCache, useApi } from '../hooks/useApi.js'
 import { tagColorHex } from '../lib/vocab.js'
 
+// 기본 프로필 이미지 — 꼬미 3종 중 계정별 고정 랜덤 (이메일 해시라 같은 계정은 항상 같은 꼬미)
+// 걷는 꼬미(curator)는 프로필용으론 너무 동적이라 제외, 윙크 꼬미(splash)로 대체 (팀 QA 2026-08-20)
+const DEFAULT_AVATARS = [
+  '/assets/splash-puppy.png',
+  '/assets/profile/profile-mascot.png',
+  '/assets/style-calendar/calendar-puppy.png',
+]
+
+function defaultAvatar(email) {
+  let hash = 0
+  for (const ch of String(email || '')) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0
+  return DEFAULT_AVATARS[hash % DEFAULT_AVATARS.length]
+}
+
 export function ProfilePage() {
   const navigate = useNavigate()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -84,7 +98,7 @@ export function ProfilePage() {
 
         <section className="profile-identity">
           <label className="profile-avatar" aria-label="프로필 이미지 변경">
-            <img src={me.avatarUrl ? assetUrl(me.avatarUrl) : '/assets/profile/profile-mascot.png'} alt="프로필 이미지" />
+            <img src={me.avatarUrl ? assetUrl(me.avatarUrl) : defaultAvatar(me.email)} alt="프로필 이미지" />
             <span className="profile-avatar-edit">✎</span>
             <input type="file" accept="image/*" onChange={changeAvatar} />
           </label>

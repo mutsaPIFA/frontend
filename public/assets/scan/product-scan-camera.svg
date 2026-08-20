@@ -1,7 +1,7 @@
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="90" height="90" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="camera button">
-<circle id="Ellipse 23" cx="45" cy="45" r="45" fill="#724C25"/>
+<circle id="Ellipse 23" cx="45" cy="45" r="45" fill="#1C1C1C"/>
 <circle id="Ellipse 24" cx="45" cy="45" r="37" fill="white"/>
-<circle id="Ellipse 22" cx="45" cy="45" r="30" fill="#9E7143" fill-opacity="0.5"/>
+<circle id="Ellipse 22" cx="45" cy="45" r="30" fill="#1C1C1C" fill-opacity="0.5"/>
 </g>
 </svg>

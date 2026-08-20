@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { apiRequest } from '../api/client.js'
 import { clearApiCache } from '../hooks/useApi.js'
 
-const splashPuppyImage = '/assets/splash-puppy.png'
 const loginRequestPuppyImage = '/assets/login-request-puppy.png'
 
 // 비밀번호 입력 + 보이기 토글 — 로그인·회원가입 공용
@@ -42,10 +41,9 @@ export function SplashPage() {
   return (
     <main className="splash-screen" data-node-id="0">
       <section className="splash-content" aria-label="MCM MUSE 시작 화면">
-        <img className="splash-image" src={splashPuppyImage} alt="MCM MUSE mascot" />
         <div className="splash-copy">
+          <p className="splash-eyebrow">YOUR CLOSET’S STYLIST</p>
           <h1 className="splash-title">MCM MUSE</h1>
-          <p className="splash-subtitle">당신만의 스타일을 발견하세요</p>
         </div>
       </section>
     </main>

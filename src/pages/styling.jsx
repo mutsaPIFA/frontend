@@ -72,14 +72,12 @@ export function MoodSelectionPage() {
   return (
     <main className="mood-selection-screen" data-node-id="53:547">
       <header className="mood-selection-header">
-        <BackButton onClick={() => navigate(-1)} />
         <div><strong>오늘은 어떤 하루예요 ?</strong><span>WHAT’S THE VIBE ?</span></div>
-        <span />
       </header>
 
       <div className="mood-curator-message">
         <img src="/assets/mood/curator.png" alt="" />
-        <span>무드를 고르면 내 옷장으로 코디를 만들어 드려요.</span>
+        <span>무드를 고르면 내 옷장으로 코디해 드려요</span>
       </div>
 
       <section className="mood-grid" aria-label="오늘의 무드 선택">
@@ -223,7 +221,7 @@ export function OutfitDetailPage() {
 
       <section className="outfit-detail-items">
         <h2>사용된 아이템</h2><span>ITEMS USED</span>
-        {/* 코디는 전부 내 옷장 아이템 조합 — 탭하면 옷 정보, MCM은 상품 페이지로 */}
+        {/* 코디는 전부 내 옷장 아이템 조합 — MCM 포함 전부 탭하면 옷 정보 모달 (팀 확정 2026-08-20) */}
         <div className="used-item-thumbs">
           {closetItems.map((item) => (
             <button key={`own-${item.id}`} className="used-item-thumb" type="button" onClick={() => setViewItem(item)}>
@@ -232,7 +230,7 @@ export function OutfitDetailPage() {
             </button>
           ))}
           {outfit.mcmProduct && (
-            <button key="mcm" className="used-item-thumb used-item-thumb-mcm" type="button" onClick={() => outfit.mcmProduct.id && navigate(`/products/${outfit.mcmProduct.id}`)}>
+            <button key="mcm" className="used-item-thumb used-item-thumb-mcm" type="button" onClick={() => setViewItem({ ...outfit.mcmProduct, source: 'MCM' })}>
               <ProductImg src={outfit.mcmProduct.cutoutUrl || outfit.mcmProduct.imageUrl} width={480} alt={outfit.mcmProduct.name} />
               <em>MCM</em>
               <small>{outfit.mcmProduct.name}</small>
