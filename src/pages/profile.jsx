@@ -22,6 +22,16 @@ function defaultAvatar(email) {
 export function ProfilePage() {
   const navigate = useNavigate()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  // 테마 토글(팀 투표용) — 블랙&화이트 ↔ 웜(IR 덱 팔레트). 새로고침 없이 즉시 전환
+  const [theme, setTheme] = useState(() => localStorage.getItem('mcm_theme') === 'warm' ? 'warm' : 'bw')
+
+  function toggleTheme() {
+    const next = theme === 'warm' ? 'bw' : 'warm'
+    localStorage.setItem('mcm_theme', next)
+    if (next === 'warm') document.documentElement.dataset.theme = 'warm'
+    else delete document.documentElement.dataset.theme
+    setTheme(next)
+  }
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameDraft, setNameDraft] = useState('')
   const [message, setMessage] = useState('')
@@ -157,6 +167,7 @@ export function ProfilePage() {
 
         {message && <p className="profile-message" role="status">{message}</p>}
         <section className="profile-logout">
+          <button type="button" onClick={toggleTheme}>테마: {theme === 'warm' ? '웜 🤎' : '블랙&화이트 🖤'} (탭하여 전환)</button>
           <button type="button" onClick={handleLogout} disabled={isLoggingOut}>{isLoggingOut ? '로그아웃 중...' : '로그아웃'}</button>
           <span>MCM MUSE</span>
         </section>
