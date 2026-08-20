@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
+import { apiRequest } from './api/client.js'
+import { clearApiCache } from './hooks/useApi.js'
 import { LoginPage, LoginRequestPage, SignupPage, SplashPage } from './pages/auth.jsx'
 import { ProductDetailPage, RecommendationsPage, ShopPage, WishlistPage } from './pages/shop.jsx'
 import { ClosetAddCompletePage, ClosetPage, RecognizeResultPage, ScanPage, StyleDnaPage } from './pages/closet.jsx'
@@ -42,7 +44,34 @@ function RootPage() {
 
   if (showSplash) return <SplashPage />
   if (localStorage.getItem('mcm_access_token')) return <ClosetPage />
-  return <Navigate to="/login" replace />
+  return <GuestEntry />
+}
+
+// QR 진입(계약 §1-6) — 토큰이 없으면 자동으로 게스트 계정을 발급해 바로 옷장으로.
+// 팀·심사위원의 일반 로그인은 /login 직접 접근으로 유지된다.
+function GuestEntry() {
+  const [status, setStatus] = useState('issuing')
+
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      try {
+        const result = await apiRequest('/api/v1/auth/guest', { method: 'POST' })
+        localStorage.setItem('mcm_access_token', result.accessToken)
+        clearApiCache()
+        if (alive) setStatus('done')
+      } catch {
+        if (alive) setStatus('failed')
+      }
+    })()
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  if (status === 'done') return <ClosetPage />
+  if (status === 'failed') return <Navigate to="/login" replace />
+  return <SplashPage />
 }
 
 function App() {

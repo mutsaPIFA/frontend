@@ -629,13 +629,13 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 
 .login-form input::placeholder { color: #6f6f69; opacity: 1; }
-.login-form input:focus { box-shadow: 0 0 0 2px rgba(91, 106, 57, 0.35); }
+.login-form input:focus { box-shadow: 0 0 0 2px rgba(107, 74, 43, 0.35); }
 
 /* 비밀번호 보이기 토글 — 입력칸 오른쪽 안쪽에 눈 아이콘 */
 .password-field { position: relative; }
 .password-field input { padding-right: 52px; }
 .password-toggle { position: absolute; top: 27px; right: 34px; display: grid; width: 32px; height: 32px; place-items: center; padding: 0; border: 0; color: #6f6f69; background: transparent; cursor: pointer; transform: translateY(-50%); }
-.password-toggle:focus-visible { border-radius: 50%; box-shadow: 0 0 0 2px rgba(91, 106, 57, 0.35); }
+.password-toggle:focus-visible { border-radius: 50%; box-shadow: 0 0 0 2px rgba(107, 74, 43, 0.35); }
 
 .login-submit {
   display: flex;
@@ -728,7 +728,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 
 .signup-form input::placeholder { color: #6f6f69; opacity: 1; }
-.signup-form input:focus { box-shadow: 0 0 0 2px rgba(91, 106, 57, 0.35); }
+.signup-form input:focus { box-shadow: 0 0 0 2px rgba(107, 74, 43, 0.35); }
 
 .signup-required-note {
   margin: 9px 0 0 20px;
