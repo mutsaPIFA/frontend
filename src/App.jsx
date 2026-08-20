@@ -29,7 +29,8 @@ function ProtectedRoute({ children }) {
 }
 
 function RootPage() {
-  const [showSplash, setShowSplash] = useState(() => sessionStorage.getItem('mcm_intro_seen') !== 'true')
+  // 앱(APK)은 실행할 때마다 스플래시 — 웹은 세션당 1회
+  const [showSplash, setShowSplash] = useState(() => isNativeApp || sessionStorage.getItem('mcm_intro_seen') !== 'true')
 
   useEffect(() => {
     if (!showSplash) return undefined
@@ -44,8 +45,12 @@ function RootPage() {
 
   if (showSplash) return <SplashPage />
   if (localStorage.getItem('mcm_access_token')) return <ClosetPage />
+  if (isNativeApp) return <Navigate to="/login" replace />
   return <GuestEntry />
 }
+
+// Capacitor 앱(APK) 여부 — 앱에서는 게스트 자동 발급 없이 일반 로그인으로 (부스 패드는 고정 계정 사용)
+const isNativeApp = Boolean(window.Capacitor?.isNativePlatform?.())
 
 // QR 진입(계약 §1-6) — 토큰이 없으면 자동으로 게스트 계정을 발급해 바로 옷장으로.
 // 팀·심사위원의 일반 로그인은 /login 직접 접근으로 유지된다.
