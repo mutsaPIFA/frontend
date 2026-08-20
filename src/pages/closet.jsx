@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { apiRequest, assetUrl } from '../api/client.js'
 import BackButton from '../components/BackButton.jsx'
 import BottomNav from '../components/BottomNav.jsx'
@@ -11,6 +11,9 @@ import ProductImg from '../components/ProductImg.jsx'
 import { closetItemImage, itemDisplayName, scanItemName } from '../lib/format.js'
 import { tagColorHex, tagOptions } from '../lib/vocab.js'
 import { stylingSession } from '../lib/stylingSession.js'
+
+// + 시트에서 고른 사진을 스캔 화면이 이어받는 인메모리 전달자 — File은 sessionStorage 직렬화가 안 된다
+let pendingScanFile = null
 
 // 옷장 대분류 — 표시 계층의 묶음일 뿐, 저장·AI 어휘는 기존 7개 category 그대로다
 const CLOSET_GROUPS = {
@@ -28,6 +31,7 @@ export function ClosetPage() {
   const [viewItem, setViewItem] = useState(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false)
 
   // 전체를 한 번에 받아 클라에서 카테고리 필터 — 탭을 오가도 선택(selectedIds)이 유지된다
   const { data, setData, isLoading, error: loadError, reload } = useApi(async () => {
@@ -64,10 +68,18 @@ export function ClosetPage() {
     setSelectedIds([])
   }
 
-  function buildDna() {
-    if (selectedIds.length === 0) return
-    stylingSession.setDnaItemIds(selectedIds)
+  // 팀 합의(2026-08-20): 스타일 DNA는 항상 옷장 전체 기준 — 선택 모드는 다중 삭제 전용
+  function goToStyleDna() {
+    stylingSession.setDnaItemIds([])
     navigate('/style-dna')
+  }
+
+  // 시트에서 사진이 정해진 뒤에만 스캔 화면으로 — 빈 프레임 상태를 사용자에게 보여주지 않는다
+  function handleAddSheetFile(event) {
+    const file = event.target.files?.[0]
+    if (!file) return
+    pendingScanFile = file
+    navigate('/closet/scan')
   }
 
   async function deleteSelectedItems() {
@@ -89,7 +101,6 @@ export function ClosetPage() {
   return (
     <main className="closet-screen" data-node-id="53:280">
       <header className="closet-header">
-        <BackButton onClick={() => window.history.back()} />
         <div className="closet-heading"><strong>내 옷장</strong><span>MY CLOSET</span></div>
         {isSelecting && (
           <button
@@ -160,22 +171,21 @@ export function ClosetPage() {
         ))}
       </section>
 
-      <Link className="closet-fab" to="/closet/scan" aria-label="아이템 추가하기">+</Link>
+      <button className="closet-fab" type="button" aria-label="아이템 추가하기" onClick={() => setIsAddSheetOpen(true)}>+</button>
 
       <div className="closet-actions">
-        {!isSelecting ? (
-          <button className="add-item-button dna-build-button" type="button" onClick={toggleSelecting}>
-            <span>스타일 추천 받기</span>
+        {(isLoading || loadError) ? null : allItems.length === 0 ? (
+          <button className="add-item-button dna-build-button" type="button" onClick={() => setIsAddSheetOpen(true)}>
+            <span>첫 옷 등록하러 가기</span>
+          </button>
+        ) : !isSelecting ? (
+          <button className="add-item-button dna-build-button" type="button" onClick={goToStyleDna}>
+            <span>내 스타일 DNA 만들기</span>
           </button>
         ) : (
-          <>
-            <button className="add-item-button closet-cancel-button" type="button" onClick={toggleSelecting}>
-              <span>취소</span>
-            </button>
-            <button className="add-item-button dna-build-button" type="button" onClick={buildDna} disabled={selectedIds.length === 0}>
-              <span>생성 {selectedIds.length > 0 ? `(${selectedIds.length})` : ''}</span>
-            </button>
-          </>
+          <button className="add-item-button closet-cancel-button" type="button" onClick={toggleSelecting}>
+            <span>취소</span>
+          </button>
         )}
       </div>
 
@@ -211,6 +221,38 @@ export function ClosetPage() {
         </div>
       )}
 
+      {isAddSheetOpen && (
+        <div className="add-sheet-layer" role="presentation" onClick={() => setIsAddSheetOpen(false)}>
+          <section
+            className="add-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="add-sheet-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="add-sheet-title">아이템 추가하기</h2>
+            <p>옷을 펼쳐두고 찍으면 가장 잘 나와요</p>
+            <label className="add-sheet-button add-sheet-primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M4 8.5h3.2l1.5-2.3h6.6l1.5 2.3H20v10.5H4V8.5Z" />
+                <circle cx="12" cy="13.2" r="3.1" />
+              </svg>
+              <span>카메라로 찍기</span>
+              <input type="file" accept="image/*" capture="environment" onChange={handleAddSheetFile} />
+            </label>
+            <label className="add-sheet-button add-sheet-secondary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="4" y="5" width="16" height="14" rx="2" />
+                <circle cx="9" cy="10" r="1.6" />
+                <path d="m5 17 4.5-4.5 3 3L16 12l3.5 3.5" />
+              </svg>
+              <span>앨범에서 고르기</span>
+              <input type="file" accept="image/*" onChange={handleAddSheetFile} />
+            </label>
+          </section>
+        </div>
+      )}
+
       <BottomNav active="closet" />
     </main>
   )
@@ -222,6 +264,15 @@ export function ScanPage() {
   const [previewUrl, setPreviewUrl] = useState('')
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState('')
+
+  // 옷장 + 시트에서 넘어온 사진이 있으면 바로 미리보기로 — 빈 프레임을 거치지 않는 흐름
+  useEffect(() => {
+    if (!pendingScanFile) return
+    const file = pendingScanFile
+    pendingScanFile = null
+    setSelectedFile(file)
+    setPreviewUrl(URL.createObjectURL(file))
+  }, [])
 
   function handleFileChange(event) {
     const file = event.target.files?.[0]
@@ -261,9 +312,9 @@ export function ScanPage() {
       </header>
 
       <section className="scan-preview" aria-label="아이템 사진 미리보기">
-        <div className="scan-frame" />
+        <div className="scan-frame"><span /><span /></div>
         {previewUrl && <img className="scan-item-image" src={previewUrl} alt="선택한 아이템" />}
-        <img className="scan-plus" src="/assets/scan/scan-plus.svg" alt="" />
+        {!previewUrl && <img className="scan-plus" src="/assets/scan/scan-plus.svg" alt="" />}
       </section>
 
       {error && <p className="scan-error" role="alert">{error}</p>}
@@ -564,12 +615,8 @@ export function StyleDnaPage() {
                     <p>{pick.product.name}</p>
                     <div className="recommendation-reason">
                       <div className="recommendation-reason-copy">
-                        <strong>스타일리스트 코멘트</strong>
+                        <strong>AI 스타일리스트 코멘트</strong>
                         <span>{pick.reason || '현재 옷장 아이템과 자연스럽게 어울리는 상품이에요.'}</span>
-                      </div>
-                      <div className="recommendation-mascot">
-                        <img src="/assets/loading-puppy-styling.png" alt="MCM 스타일리스트 꼬미" />
-                        <span>MCM 스타일리스트 꼬미</span>
                       </div>
                     </div>
                   </article>

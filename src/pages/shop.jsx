@@ -113,46 +113,68 @@ export function ShopPage() {
     return () => clearTimeout(timer)
   }, [query])
 
+  // 8개씩 페이지 탭 (계약 §2-1 page/size) — CLOTHES 탭·서브필터는 클라 필터라 서버 페이징과
+  // 어긋나므로 그 경우만 전체를 받아 클라에서 페이징. UI는 두 경로 동일.
+  const PAGE_SIZE = 8
+  const [page, setPage] = useState(1)
+  const serverPaged = !activeSubFilter && category !== 'clothes'
+  const catalogTopRef = useRef(null)
+
+  useEffect(() => {
+    setPage(1)
+  }, [category, subLabel, debouncedQuery])
+
   const { data, isLoading, error: loadError, reload } = useApi(async () => {
     const params = new URLSearchParams()
     if (debouncedQuery.trim()) params.set('query', debouncedQuery.trim())
     if (category && category !== 'clothes') params.set('category', category)
-    const suffix = params.toString() ? `?${params.toString()}` : ''
-    const result = await apiRequest(`/api/v1/mcm-products${suffix}`)
-    return Array.isArray(result) ? result : []
-  }, [debouncedQuery, category], { cacheKey: `products:${category}:${debouncedQuery.trim()}` })
-
-  const products = data || []
-  const visibleProducts = useMemo(() => {
-    let list = products
-    if (category === 'clothes') list = products.filter((product) => productCategory(product) === 'CLOTHES')
-    if (activeSubFilter) list = list.filter((product) => matchesSubFilter(product, activeSubFilter))
-    // ALL 탭은 id순(시드 순서)이라 같은 시리즈가 연속으로 뜬다 — 고정 해시로 섞어 다양하게
-    if (!category && !debouncedQuery.trim()) {
-      list = [...list].sort((a, b) => ((a.id * 2654435761) % 4093) - ((b.id * 2654435761) % 4093))
+    if (serverPaged) {
+      params.set('page', String(page))
+      params.set('size', String(PAGE_SIZE))
     }
+    const suffix = params.toString() ? `?${params.toString()}` : ''
+    return apiRequest(`/api/v1/mcm-products${suffix}`)
+  }, [debouncedQuery, category, subLabel, serverPaged ? page : 0], {
+    cacheKey: `products:${category}:${subLabel}:${debouncedQuery.trim()}:${serverPaged ? page : 'all'}`,
+  })
+
+  const isPagedResponse = Boolean(data) && !Array.isArray(data)
+  const products = isPagedResponse ? data.items || [] : data || []
+  const clientFiltered = useMemo(() => {
+    if (isPagedResponse) return products
+    let list = products
+    if (category === 'clothes') list = list.filter((product) => productCategory(product) === 'CLOTHES')
+    if (activeSubFilter) list = list.filter((product) => matchesSubFilter(product, activeSubFilter))
     return list
-  }, [products, category, activeSubFilter, debouncedQuery])
+  }, [products, isPagedResponse, category, activeSubFilter])
 
-  // 589개를 한 번에 그리지 않고 스크롤에 맞춰 20개씩 — 무한 스크롤 체감 + 성능
-  const [visibleCount, setVisibleCount] = useState(20)
-  const sentinelRef = useRef(null)
+  const totalPages = isPagedResponse ? data.totalPages : Math.max(1, Math.ceil(clientFiltered.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const totalItems = isPagedResponse ? data.totalItems : clientFiltered.length
+  const pagedProducts = isPagedResponse
+    ? products
+    : clientFiltered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
-  useEffect(() => {
-    setVisibleCount(20)
-  }, [category, subLabel, debouncedQuery])
+  function goToPage(next) {
+    setPage(next)
+    catalogTopRef.current?.scrollIntoView({ block: 'start' })
+  }
 
-  useEffect(() => {
-    const sentinel = sentinelRef.current
-    if (!sentinel) return undefined
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) setVisibleCount((count) => count + 20)
-    }, { rootMargin: '600px' })
-    observer.observe(sentinel)
-    return () => observer.disconnect()
-  }, [])
-
-  const pagedProducts = visibleProducts.slice(0, visibleCount)
+  // 74페이지를 다 나열하지 않게 현재 주변 + 양 끝만 (사이는 …)
+  function pageNumbers(current, total) {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+    const picked = [...new Set([1, current - 1, current, current + 1, total])]
+      .filter((n) => n >= 1 && n <= total)
+      .sort((a, b) => a - b)
+    const out = []
+    let prev = 0
+    for (const n of picked) {
+      if (n - prev > 1) out.push('…')
+      out.push(n)
+      prev = n
+    }
+    return out
+  }
 
   return (
     <main className="home-screen" data-node-id="257:661">
@@ -165,7 +187,7 @@ export function ShopPage() {
         <h1>취향을 아는 샵<br /><span>MCM MUSE</span></h1>
       </section>
 
-      <section className="catalog-controls">
+      <section className="catalog-controls" ref={catalogTopRef}>
         <form className="product-search" onSubmit={(event) => event.preventDefault()}>
           <img src="/assets/home/search.svg" alt="" />
           <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="어떤 상품을 찾으시나요 ?" />
@@ -211,7 +233,7 @@ export function ShopPage() {
             <button className="retry-button" type="button" onClick={reload}>다시 시도</button>
           </div>
         )}
-        {!isLoading && !loadError && visibleProducts.length === 0 && <p className="grid-status">조건에 맞는 상품이 없어요.</p>}
+        {!isLoading && !loadError && totalItems === 0 && <p className="grid-status">조건에 맞는 상품이 없어요.</p>}
         {pagedProducts.map((product) => (
           <article
             className="product-card product-card-clickable"
@@ -237,8 +259,29 @@ export function ShopPage() {
             </div>
           </article>
         ))}
-        <div ref={sentinelRef} aria-hidden="true" />
       </section>
+
+      {!isLoading && !loadError && totalPages > 1 && (
+        <nav className="page-tabs" aria-label="상품 페이지">
+          <button type="button" aria-label="이전 페이지" disabled={currentPage === 1} onClick={() => goToPage(currentPage - 1)}>‹</button>
+          {pageNumbers(currentPage, totalPages).map((n, i) => (
+            n === '…'
+              ? <span key={`gap-${i}`} aria-hidden="true">…</span>
+              : (
+                <button
+                  key={n}
+                  type="button"
+                  className={n === currentPage ? 'active' : ''}
+                  aria-current={n === currentPage ? 'page' : undefined}
+                  onClick={() => goToPage(n)}
+                >
+                  {n}
+                </button>
+              )
+          ))}
+          <button type="button" aria-label="다음 페이지" disabled={currentPage === totalPages} onClick={() => goToPage(currentPage + 1)}>›</button>
+        </nav>
+      )}
 
       <BottomNav active="shop" />
     </main>

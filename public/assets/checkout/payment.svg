@@ -2,8 +2,8 @@
 <g id="payment icon">
 <circle id="Ellipse 40" cx="20" cy="20" r="20" fill="#ECEAE6"/>
 <g id="Group 121">
-<path id="Vector" d="M27.0385 11H10.9615C9.32593 11 8 12.3259 8 13.9615V24.9615C8 26.5972 9.32593 27.9231 10.9615 27.9231H27.0385C28.6741 27.9231 30 26.5972 30 24.9615V13.9615C30 12.3259 28.6741 11 27.0385 11Z" stroke="#724C25" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path id="Vector_2" d="M8 16.0769H30M12.2308 21.7884H14.7692V22.8461H12.2308V21.7884Z" stroke="#724C25" stroke-width="3.75" stroke-linejoin="round"/>
+<path id="Vector" d="M27.0385 11H10.9615C9.32593 11 8 12.3259 8 13.9615V24.9615C8 26.5972 9.32593 27.9231 10.9615 27.9231H27.0385C28.6741 27.9231 30 26.5972 30 24.9615V13.9615C30 12.3259 28.6741 11 27.0385 11Z" stroke="#1C1C1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M8 16.0769H30M12.2308 21.7884H14.7692V22.8461H12.2308V21.7884Z" stroke="#1C1C1C" stroke-width="3.75" stroke-linejoin="round"/>
 </g>
 </g>
 </svg>
