@@ -41,7 +41,7 @@ function RootPage() {
   }, [showSplash])
 
   if (showSplash) return <SplashPage />
-  if (localStorage.getItem('mcm_access_token')) return <ShopPage />
+  if (localStorage.getItem('mcm_access_token')) return <ClosetPage />
   return <Navigate to="/login" replace />
 }
 
@@ -54,6 +54,7 @@ function App() {
       <Route path="/auth/request" element={<LoginRequestPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/shop" element={<ProtectedRoute><ShopPage /></ProtectedRoute>} />
       <Route path="/closet" element={<ProtectedRoute><ClosetPage /></ProtectedRoute>} />
       <Route path="/closet/scan" element={<ProtectedRoute><ScanPage /></ProtectedRoute>} />
       <Route path="/closet/scan/recognize" element={<ProtectedRoute><RecognizeResultPage /></ProtectedRoute>} />

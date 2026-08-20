@@ -33,7 +33,7 @@ const navIcons = {
 }
 
 const navTabs = [
-  { key: 'shop', to: '/', label: 'shop' },
+  { key: 'shop', to: '/shop', label: 'shop' },
   { key: 'closet', to: '/closet', label: 'closet' },
   { key: 'style', to: '/styling', label: 'style' },
   { key: 'profile', to: '/profile', label: 'profile' },
