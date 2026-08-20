@@ -2,9 +2,9 @@
 <g id="trash icon">
 <circle id="Ellipse 39" cx="21" cy="21" r="21" fill="#ECEAE6"/>
 <g id="Group">
-<path id="Vector" d="M27.75 13.125V28.8747C27.75 29.4372 27.1875 29.9997 26.625 29.9997H21H15.375C14.8125 29.9997 14.25 29.4372 14.25 28.8747V13.125" stroke="#724C25" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<path id="Vector_2" d="M12 13.125H30" stroke="#724C25" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-<path id="Vector_3" d="M18.75 12H23.25M18.75 17.6249V25.4998M23.25 17.6249V25.4998" stroke="#724C25" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector" d="M27.75 13.125V28.8747C27.75 29.4372 27.1875 29.9997 26.625 29.9997H21H15.375C14.8125 29.9997 14.25 29.4372 14.25 28.8747V13.125" stroke="#1C1C1C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M12 13.125H30" stroke="#1C1C1C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_3" d="M18.75 12H23.25M18.75 17.6249V25.4998M23.25 17.6249V25.4998" stroke="#1C1C1C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 </g>
 </g>
 </svg>
